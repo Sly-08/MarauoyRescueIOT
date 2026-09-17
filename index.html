@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RESCUE-IOT | Flood Monitoring and Emergency Alerts</title>
+  <meta name="description" content="IoT-powered flood monitoring and emergency alert prototype for Barangay Marauoy, Lipa City.">
+  <link rel="icon" href="assets/May%207,%202026,%2007_38_44%20PM%20(1).png" type="image/png">
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="css/landing.css">
+  <link rel="stylesheet" href="css/palette.css">
+</head>
+<body>
+  <main class="landing">
+    <div class="landing-water" aria-hidden="true"></div>
+    <header class="landing-nav">
+      <a class="landing-brand" href="index.html">
+        <img src="assets/May%207,%202026,%2007_38_44%20PM%20(1).png" alt="RESCUE-IOT">
+        <span>RESCUE-IOT</span>
+      </a>
+      <a class="btn btn-secondary" href="login.html">Sign In</a>
+    </header>
+
+    <section class="hero-section">
+      <div class="hero-copy">
+        <span class="badge safe"><span class="dot"></span>System Active - Monitoring Live</span>
+        <h1>RESCUE-IOT</h1>
+        <p class="hero-subtitle">Real-Time Emergency System for Community Updates and Evacuation using IoT</p>
+        <p class="hero-text">Smart flood detection, faster alerts, and safer community response for Barangay Marauoy in Lipa City.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="login.html"><span data-icon="shield"></span>Login</a>
+          <a class="btn btn-secondary" href="dashboard.html" onclick="App.publicAccess()"><span data-icon="activity"></span>View Public Flood Status</a>
+          <button class="btn btn-danger" onclick="Landing.hotlines()"><span data-icon="phone"></span>Emergency Hotlines</button>
+        </div>
+      </div>
+      <aside class="hero-panel card">
+        <div class="panel-scan"></div>
+        <div class="hero-map marauoy-map" id="landing-map" aria-label="Barangay Marauoy map preview">
+          <div class="map-fallback" id="landing-map-fallback">
+            <svg class="map-schematic" viewBox="0 0 620 420" aria-hidden="true">
+              <path class="map-area area-safe" d="M54 94 C138 42 246 54 329 92 C421 134 505 112 578 70 L598 330 C492 382 398 356 304 336 C218 318 124 348 42 392 Z"/>
+              <path class="map-area area-risk" d="M84 250 C160 205 230 228 296 254 C350 276 412 264 470 226 C456 292 402 336 330 338 C244 341 154 320 84 250 Z"/>
+              <path class="map-creek" d="M28 290 C96 238 140 232 210 250 C278 268 322 318 392 292 C458 268 492 196 594 166"/>
+              <path class="map-road main" d="M62 156 C152 138 240 138 324 162 C412 186 498 186 586 158"/>
+              <path class="map-road secondary" d="M118 358 C168 302 202 232 238 154 C264 98 302 72 368 56"/>
+              <path class="map-road secondary" d="M330 376 C360 310 376 252 392 188 C408 126 438 76 508 44"/>
+              <path class="map-route" d="M176 268 C232 244 282 224 344 202 C394 185 434 170 496 154"/>
+            </svg>
+            <span class="map-title"><strong>Barangay Marauoy</strong><small>Lipa City, Batangas</small></span>
+            <span class="map-road-label main-road">Marauoy Main Road</span>
+            <span class="map-road-label creek-road">Creek Side Road</span>
+            <span class="map-pin sensor warning pin-a"><strong>SEN-001</strong><small>75 cm</small></span>
+            <span class="map-pin sensor danger pin-b"><strong>Bridge</strong><small>flood watch</small></span>
+            <span class="map-pin center pin-c"><strong>Brgy Hall</strong><small>evac center</small></span>
+            <span class="map-pin center pin-d"><strong>Elem. School</strong><small>0.9 km</small></span>
+            <span class="map-zone-label">Low-lying flood zone</span>
+          </div>
+        </div>
+        <div class="status-readout">
+          <div>
+            <span class="eyebrow">Current Status</span>
+            <strong id="landing-status">Warning</strong>
+          </div>
+          <div>
+            <span class="eyebrow">Water Level</span>
+            <strong id="landing-level">75 cm</strong>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="feature-strip">
+      <article class="feature-card">
+        <span data-icon="water"></span>
+        <h3>Real-Time Sensors</h3>
+        <p>Ultrasonic flood monitors track water levels in the Marauoy creek and bridge approach.</p>
+      </article>
+      <article class="feature-card">
+        <span data-icon="bell"></span>
+        <h3>Multi-Channel Alerts</h3>
+        <p>Simulated SMS, app, siren, warning light, and dashboard notifications.</p>
+      </article>
+      <article class="feature-card">
+        <span data-icon="map"></span>
+        <h3>Evacuation Guidance</h3>
+        <p>Map markers, route overlays, centers, and road status for response teams.</p>
+      </article>
+    </section>
+
+    <footer class="ticker">
+      <span><strong>Monitoring:</strong> Barangay Marauoy, Lipa City</span>
+      <span><strong>Active Sensors:</strong> 3 online, 1 maintenance</span>
+      <span><strong>Last Updated:</strong> <span id="landing-time"></span></span>
+    </footer>
+  </main>
+
+  <script src="js/app.js"></script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script type="module">
+  /*
+   * Load RescueData first because data.js is an ES module.
+   */
+  await import("./js/data.js");
+
+  /*
+   * Make sure the shared application objects exist
+   * before starting the landing page.
+   */
+  if (!window.App) {
+    console.error(
+      "RESCUE-IOT: App failed to load."
+    );
+  }
+
+  if (!window.RescueData) {
+    console.error(
+      "RESCUE-IOT: RescueData failed to load."
+    );
+  }
+
+  document
+    .querySelectorAll("[data-icon]")
+    .forEach((node) => {
+      node.innerHTML =
+        window.App?.icons?.[node.dataset.icon] || "";
+    });
+
+  window.Landing = {
+
+  hotlines() {
+
+  const hotlines = [
+    {
+      name: "Lipa CDRRMO (Lipa Rescue)",
+      numbers: [
+        "0915-463-5005",
+        "(043) 756-0127",
+        "(043) 757-5164"
+      ]
+    },
+    {
+      name: "Lipa Bureau of Fire Protection (BFP)",
+      numbers: [
+        "0927-575-8065",
+        "(043) 757-4618"
+      ]
+    },
+    {
+      name: "Lipa Philippine National Police (PNP)",
+      numbers: [
+        "0977-744-9692",
+        "(043) 702-3832"
+      ]
+    },
+    {
+      name: "Lipa Traffic Management Division (TMD)",
+      numbers: [
+        "(043) 702-6454",
+        "(043) 404-9152"
+      ]
+    },
+    {
+      name: "Batangas II Electric Cooperative Inc.",
+      numbers: [
+        "0917-504-9254",
+        "0998-892-0145",
+        "(043) 756-6337"
+      ]
+    },
+    {
+      name: "Metro Lipa Water District (MLWD)",
+      numbers: [
+        "(043) 756-1611",
+        "(043) 756-1118"
+      ]
+    },
+    {
+      name: "Red Cross Lipa",
+      numbers: [
+        "0998-957-0443",
+        "(043) 740-0768"
+      ]
+    }
+  ];
+
+  const rows = hotlines
+    .map(
+      (item) => `
+        <tr>
+          <td>
+            <strong>${item.name}</strong>
+          </td>
+
+          <td>
+            ${item.numbers
+              .map(
+                (number) => `
+                  <div class="hotline-number">
+                    ${number}
+                  </div>
+                `
+              )
+              .join("")}
+          </td>
+        </tr>
+      `
+    )
+    .join("");
+
+  window.App?.showModal(
+    "Emergency Hotlines",
+
+    `
+      <p
+        class="text-2"
+        style="margin-bottom:16px">
+
+        Use these numbers for demo emergency
+        coordination in Lipa City.
+
+      </p>
+
+      <div class="hotlines-table-wrap">
+
+        <table class="hotlines-table">
+
+          <thead>
+            <tr>
+              <th>Office</th>
+              <th>Contact Number</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            ${rows}
+          </tbody>
+
+        </table>
+
+      </div>
+    `,
+
+    `
+      <button
+        class="btn btn-secondary"
+        onclick="App.closeModal()">
+        Close
+      </button>
+    `
+  );
+},
+
+    initMap() {
+
+      const mapEl =
+        document.getElementById(
+          "landing-map"
+        );
+
+      if (
+        !mapEl ||
+        !window.L
+      ) {
+        return;
+      }
+
+      const tileLayer =
+        L.tileLayer(
+          "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+          {
+            maxZoom: 19,
+
+            attribution:
+              "&copy; OpenStreetMap contributors"
+          }
+        );
+
+      const map =
+        L.map(
+          mapEl,
+          {
+            zoomControl: false,
+
+            attributionControl: true,
+
+            dragging: false,
+
+            scrollWheelZoom: false,
+
+            doubleClickZoom: false,
+
+            boxZoom: false,
+
+            keyboard: false,
+
+            tap: false
+          }
+        )
+        .setView(
+          [13.9408, 121.1624],
+          16
+        );
+
+      tileLayer.on(
+        "load",
+        () => {
+          mapEl.classList.add(
+            "is-live"
+          );
+        }
+      );
+
+      tileLayer.addTo(map);
+
+      const pin =
+        (
+          tone,
+          title,
+          note
+        ) =>
+          L.divIcon({
+            className:
+              `landing-pin ${tone}`,
+
+            html: `
+              <b></b>
+
+              <span>
+                <strong>
+                  ${title}
+                </strong>
+
+                <small>
+                  ${note}
+                </small>
+              </span>
+            `,
+
+            iconSize: [
+              118,
+              34
+            ],
+
+            iconAnchor: [
+              12,
+              17
+            ]
+          });
+
+      L.circle(
+        [
+          13.9406,
+          121.1617
+        ],
+        {
+          radius: 145,
+
+          color: "#ef4444",
+
+          fillColor: "#ef4444",
+
+          fillOpacity: .16,
+
+          weight: 2
+        }
+      ).addTo(map);
+
+      L.polyline(
+        [
+          [
+            13.9402,
+            121.1611
+          ],
+
+          [
+            13.9405,
+            121.1640
+          ],
+
+          [
+            13.9390,
+            121.1655
+          ]
+        ],
+        {
+          color: "#22a06b",
+
+          weight: 5,
+
+          dashArray: "8 8"
+        }
+      ).addTo(map);
+
+      L.marker(
+        [
+          13.9412,
+          121.1625
+        ],
+        {
+          icon:
+            pin(
+              "warning",
+              "SEN-001",
+              "75 cm"
+            )
+        }
+      ).addTo(map);
+
+      L.marker(
+        [
+          13.9408,
+          121.1591
+        ],
+        {
+          icon:
+            pin(
+              "danger",
+              "Bridge",
+              "watch"
+            )
+        }
+      ).addTo(map);
+
+      L.marker(
+        [
+          13.9405,
+          121.1640
+        ],
+        {
+          icon:
+            pin(
+              "center",
+              "Brgy Hall",
+              "evac"
+            )
+        }
+      ).addTo(map);
+
+      L.marker(
+        [
+          13.9390,
+          121.1655
+        ],
+        {
+          icon:
+            pin(
+              "center",
+              "School",
+              "0.9 km"
+            )
+        }
+      ).addTo(map);
+
+      setTimeout(
+        () => map.invalidateSize(),
+        100
+      );
+    }
+  };
+
+  function tickLanding() {
+
+    if (
+      !window.RescueData
+    ) {
+      return;
+    }
+
+    const status =
+      RescueData.status();
+
+    const levelEl =
+      document.getElementById(
+        "landing-level"
+      );
+
+    const statusEl =
+      document.getElementById(
+        "landing-status"
+      );
+
+    const timeEl =
+      document.getElementById(
+        "landing-time"
+      );
+
+    if (levelEl) {
+
+      levelEl.textContent =
+        `${RescueData.currentWaterLevel} cm`;
+
+    }
+
+    if (statusEl) {
+
+      statusEl.textContent =
+        status.label;
+
+    }
+
+    if (timeEl) {
+
+      timeEl.textContent =
+        new Date().toLocaleTimeString(
+          "en-PH"
+        );
+
+    }
+  }
+
+  /*
+   * Initialize Firebase-backed RescueData.
+   */
+  try {
+
+    if (
+      typeof RescueData.initialize ===
+      "function"
+    ) {
+
+      await RescueData.initialize();
+
+    }
+
+  } catch (error) {
+
+    console.error(
+      "RESCUE-IOT: Landing data initialization failed.",
+      error
+    );
+
+  }
+
+  tickLanding();
+
+  Landing.initMap();
+
+  setInterval(
+    () => {
+
+      if (
+        typeof RescueData.updateWaterLevel ===
+        "function"
+      ) {
+
+        RescueData.updateWaterLevel();
+
+      }
+
+      tickLanding();
+
+    },
+    2500
+  );
+</script>
+</body>
+</html>

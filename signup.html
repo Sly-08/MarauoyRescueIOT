@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1">
+
+  <title>
+    Sign Up | RESCUE-IOT
+  </title>
+
+  <link
+    rel="icon"
+    href="assets/May%207,%202026,%2007_38_44%20PM%20(1).png"
+    type="image/png">
+
+  <link
+    rel="stylesheet"
+    href="css/global.css">
+
+  <link
+    rel="stylesheet"
+    href="css/components.css">
+
+  <link
+    rel="stylesheet"
+    href="css/palette.css">
+
+  <link
+    rel="stylesheet"
+    href="css/login.css">
+
+</head>
+
+
+<body>
+
+<main class="login-page">
+
+<section class="auth-shell">
+
+
+  <!-- TOP BAR -->
+
+  <header class="auth-topbar">
+
+    <a
+      class="auth-brand"
+      href="index.html">
+
+      <img
+        src="assets/May%207,%202026,%2007_38_44%20PM%20(1).png"
+        alt="RESCUE-IOT">
+
+      <span>
+
+        <strong>
+          RESCUE-IOT
+        </strong>
+
+        <small>
+          Community registration
+        </small>
+
+      </span>
+
+    </a>
+
+
+    <a
+      class="auth-public-link"
+      href="login.html">
+
+      Already have an account?
+
+    </a>
+
+  </header>
+
+
+  <div class="auth-grid">
+
+
+    <!-- LEFT SIDE -->
+
+    <aside class="auth-overview">
+
+      <span class="auth-eyebrow">
+        Barangay Marauoy
+      </span>
+
+      <h1>
+        Join the RESCUE-IOT community.
+      </h1>
+
+      <p>
+        Create your account to monitor flood
+        conditions, receive verified emergency
+        updates, view evacuation information,
+        and request assistance.
+      </p>
+
+
+      <div class="auth-status-card">
+
+        <div>
+
+          <span class="eyebrow">
+            Current Status
+          </span>
+
+          <strong id="signup-status">
+            Warning
+          </strong>
+
+          <p id="signup-action">
+            Prepare emergency bags and monitor
+            verified barangay updates.
+          </p>
+
+        </div>
+
+
+        <div class="auth-level">
+
+          <strong id="signup-level">
+            75
+          </strong>
+
+          <span>
+            cm
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <div class="auth-mini-grid">
+
+        <span>
+
+          <strong>
+            3/4
+          </strong>
+
+          <small>
+            sensors online
+          </small>
+
+        </span>
+
+
+        <span>
+
+          <strong>
+            24/7
+          </strong>
+
+          <small>
+            monitoring
+          </small>
+
+        </span>
+
+
+        <span>
+
+          <strong>
+            SMS
+          </strong>
+
+          <small>
+            alert fallback
+          </small>
+
+        </span>
+
+      </div>
+
+    </aside>
+
+
+    <!-- RIGHT SIDE -->
+
+    <section class="auth-panel">
+
+
+      <div class="auth-panel-head">
+
+        <span class="auth-eyebrow">
+          Create Account
+        </span>
+
+        <h2>
+          Sign up
+        </h2>
+
+        <p>
+          Register as a resident to access
+          community flood information.
+        </p>
+
+      </div>
+
+
+      <!-- MESSAGE -->
+
+      <div
+        id="signup-message"
+        class="auth-message"
+        style="display:none;">
+      </div>
+
+
+      <!-- FORM -->
+
+      <form
+        id="signup-form"
+        class="auth-form"
+        onsubmit="Signup.submit(event)">
+
+
+        <!-- NAME -->
+
+        <label class="form-group">
+
+          <span class="form-label">
+            Full name
+          </span>
+
+          <input
+            class="form-input"
+            id="signup-name"
+            type="text"
+            placeholder="Juan Dela Cruz"
+            autocomplete="name"
+            required>
+
+        </label>
+
+
+        <!-- EMAIL -->
+
+        <label class="form-group">
+
+          <span class="form-label">
+            Email address
+          </span>
+
+          <input
+            class="form-input"
+            id="signup-email"
+            type="email"
+            placeholder="you@example.com"
+            autocomplete="email"
+            required>
+
+        </label>
+
+
+        <!-- BARANGAY -->
+
+        <label class="form-group">
+
+          <span class="form-label">
+            Barangay
+          </span>
+
+          <select
+            class="form-input"
+            id="signup-barangay"
+            required>
+
+            <option value="">
+              Select your barangay
+            </option>
+
+            <option value="Marauoy">
+              Marauoy
+            </option>
+
+            <option value="Sabang">
+              Sabang
+            </option>
+
+          </select>
+
+        </label>
+
+
+        <!-- MOBILE NUMBER -->
+
+        <label class="form-group">
+
+          <span class="form-label">
+            Mobile number
+          </span>
+
+          <input
+            class="form-input"
+            id="signup-phone"
+            type="tel"
+            placeholder="09XXXXXXXXX"
+            autocomplete="tel"
+            inputmode="tel"
+            maxlength="13"
+            required>
+
+        </label>
+
+
+        <!-- SMS ALERTS -->
+
+        <label class="check">
+
+          <input
+            id="signup-sms-enabled"
+            type="checkbox"
+            checked>
+
+          <span>
+            Receive emergency SMS alerts
+          </span>
+
+        </label>
+
+
+        <!-- PASSWORD -->
+
+        <label class="form-group">
+
+          <span class="form-label">
+            Password
+          </span>
+
+          <input
+            class="form-input"
+            id="signup-password"
+            type="password"
+            placeholder="At least 8 characters"
+            autocomplete="new-password"
+            minlength="8"
+            required>
+
+        </label>
+
+
+        <!-- CONFIRM -->
+
+        <label class="form-group">
+
+          <span class="form-label">
+            Confirm password
+          </span>
+
+          <input
+            class="form-input"
+            id="signup-confirm-password"
+            type="password"
+            placeholder="Repeat your password"
+            autocomplete="new-password"
+            minlength="8"
+            required>
+
+        </label>
+
+
+        <!-- TERMS -->
+
+        <label class="check">
+
+          <input
+            id="signup-terms"
+            type="checkbox"
+            required>
+
+          <span>
+            I agree to use RESCUE-IOT only for
+            legitimate community safety purposes.
+          </span>
+
+        </label>
+
+
+        <!-- BUTTON -->
+
+        <button
+          class="auth-submit"
+          id="signup-button"
+          type="submit">
+
+          <span>
+            Create account
+          </span>
+
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2">
+
+            <path d="M5 12h14"/>
+            <path d="m13 6 6 6-6 6"/>
+
+          </svg>
+
+        </button>
+
+      </form>
+
+
+      <div class="auth-login-link">
+
+        Already registered?
+
+        <a href="login.html">
+          Sign in
+        </a>
+
+      </div>
+
+    </section>
+
+  </div>
+
+
+  <footer class="auth-footer">
+
+    <span>
+      support@rescue-iot.ph
+    </span>
+
+    <span>
+      RESCUE-IOT Community System
+    </span>
+
+  </footer>
+
+
+</section>
+
+</main>
+
+
+<script type="module" src="js/data.js"></script>
+<script src="js/app.js"></script>
+
+
+<script>
+
+const Signup = {
+
+  showMessage(message, type = "error") {
+
+    const box =
+      document.getElementById(
+        "signup-message"
+      );
+
+    box.textContent =
+      message;
+
+    box.className =
+      `auth-message ${type}`;
+
+    box.style.display =
+      "block";
+
+  },
+
+
+  submit(event) {
+
+    event.preventDefault();
+
+
+    const name =
+      document.getElementById(
+        "signup-name"
+      ).value.trim();
+
+
+    const email =
+      document.getElementById(
+        "signup-email"
+      ).value.trim();
+
+
+    const barangay =
+      document.getElementById(
+        "signup-barangay"
+      ).value;
+
+
+    const phone =
+      document.getElementById(
+        "signup-phone"
+      ).value.trim();
+
+
+    const smsEnabled =
+      document.getElementById(
+        "signup-sms-enabled"
+      ).checked;
+
+
+    const password =
+      document.getElementById(
+        "signup-password"
+      ).value;
+
+
+    const confirmPassword =
+      document.getElementById(
+        "signup-confirm-password"
+      ).value;
+
+
+    const terms =
+      document.getElementById(
+        "signup-terms"
+      ).checked;
+
+
+    const button =
+      document.getElementById(
+        "signup-button"
+      );
+
+
+    /* VALIDATION */
+
+    if (!name) {
+
+      this.showMessage(
+        "Please enter your full name."
+      );
+
+      return;
+
+    }
+
+
+    if (!email) {
+
+      this.showMessage(
+        "Please enter your email address."
+      );
+
+      return;
+
+    }
+
+
+    if (!barangay) {
+
+      this.showMessage(
+        "Please select your barangay."
+      );
+
+      return;
+
+    }
+
+
+    if (
+      !/^(09\d{9}|639\d{9})$/.test(
+        phone.replace(/[\s-]/g, "")
+      )
+    ) {
+
+      this.showMessage(
+        "Please enter a valid Philippine mobile number."
+      );
+
+      return;
+
+    }
+
+
+    if (password.length < 8) {
+
+      this.showMessage(
+        "Password must contain at least 8 characters."
+      );
+
+      return;
+
+    }
+
+
+    if (password !== confirmPassword) {
+
+      this.showMessage(
+        "Passwords do not match."
+      );
+
+      return;
+
+    }
+
+
+    if (!terms) {
+
+      this.showMessage(
+        "Please accept the terms before creating your account."
+      );
+
+      return;
+
+    }
+
+
+    /* DISABLE */
+
+    button.disabled = true;
+
+    button.querySelector(
+      "span"
+    ).textContent =
+      "Creating Account...";
+
+
+    /* CREATE ACCOUNT */
+
+    const result =
+      App.registerUser({
+
+        name: name,
+
+        email: email,
+
+        barangay: barangay,
+
+        phone: phone,
+
+        smsEnabled: smsEnabled,
+
+        password: password,
+
+        role: "resident"
+
+      });
+
+
+    if (!result.success) {
+
+      this.showMessage(
+        result.message,
+        "error"
+      );
+
+      button.disabled = false;
+
+      button.querySelector(
+        "span"
+      ).textContent =
+        "Create account";
+
+      return;
+
+    }
+
+
+    /* SUCCESS */
+
+    this.showMessage(
+      "Account created successfully! Redirecting to login...",
+      "success"
+    );
+
+
+    button.querySelector(
+      "span"
+    ).textContent =
+      "Account Created";
+
+
+    setTimeout(() => {
+
+      window.location.href =
+        "login.html";
+
+    }, 1200);
+
+  }
+
+};
+
+
+/* CURRENT STATUS */
+
+function updateSignupStatus() {
+
+  if (!window.RescueData) {
+    return;
+  }
+
+
+  const status =
+    RescueData.status();
+
+
+  document.getElementById(
+    "signup-status"
+  ).textContent =
+    status.label;
+
+
+  document.getElementById(
+    "signup-action"
+  ).textContent =
+    status.action;
+
+
+  document.getElementById(
+    "signup-level"
+  ).textContent =
+    RescueData.currentWaterLevel;
+
+}
+
+
+updateSignupStatus();
+
+</script>
+
+</body>
+</html>

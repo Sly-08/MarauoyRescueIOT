@@ -1,0 +1,15 @@
+.date-row { display: grid; grid-template-columns: 1fr 1fr auto auto auto; gap: 10px; align-items: end; }
+.event-card { padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: rgba(255,255,255,.035); }
+.event-card strong { display: block; margin-bottom: 5px; color: var(--cyan); font-size: 1.3rem; }
+.pagination { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 12px; color: var(--muted); font-size: .84rem; }
+@media (max-width: 900px) { .date-row { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .date-row { grid-template-columns: 1fr; } }
+
+/* Clean visual refresh */
+.event-card {
+  background: var(--surface-2);
+}
+
+.pagination {
+  font-weight: 800;
+}

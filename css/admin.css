@@ -1,0 +1,39 @@
+.admin-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.admin-tabs button { min-height: 38px; padding: 8px 12px; color: var(--text-2); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); font-weight: 900; }
+.admin-tabs button.active { color: #f8fbff; background: var(--water-gradient); }
+.admin-section { display: none; }
+.admin-section.active { display: grid; gap: 16px; animation: fade-up .18s ease both; }
+.setting-row { display: grid; grid-template-columns: minmax(160px, 1fr) 180px auto; gap: 12px; align-items: center; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: rgba(255,255,255,.035); }
+.override-card { border-color: rgba(240,43,29,.35); background: linear-gradient(135deg, rgba(240,43,29,.15), rgba(8,119,201,.04)); }
+.setting-grid { display: grid; gap: 12px; }
+@media (max-width: 760px) { .setting-row { grid-template-columns: 1fr; } }
+
+/* Clean visual refresh */
+.admin-tabs {
+  gap: 8px;
+  padding: 6px;
+  border: 1px solid rgba(255,255,255,.78);
+  border-radius: var(--radius);
+  background: rgba(255,255,255,.72);
+  box-shadow: var(--shadow-soft);
+}
+
+.admin-tabs button {
+  border-color: transparent;
+  background: transparent;
+}
+
+.admin-tabs button.active {
+  color: #ffffff;
+  background: #111315;
+  box-shadow: 0 10px 24px rgba(17,19,21,.16);
+}
+
+.setting-row {
+  background: var(--surface-2);
+}
+
+.override-card {
+  border-color: rgba(220,38,38,.22);
+  background: linear-gradient(135deg, rgba(220,38,38,.1), rgba(255,255,255,.92));
+}

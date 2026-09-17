@@ -1,0 +1,616 @@
+/*
+  System palette lock
+  Main hues: neutral, primary blue, emergency red.
+  Status meaning is carried by labels, layout, and weight instead of many colors.
+*/
+:root {
+  --bg: #eef2f7;
+  --bg-2: #f8fafc;
+  --surface: #ffffff;
+  --surface-2: #f4f7fb;
+  --surface-3: #e8eef6;
+  --text: #111827;
+  --text-2: #475569;
+  --muted: #7b8798;
+  --cyan: #2563eb;
+  --blue: #2563eb;
+  --teal: #2563eb;
+  --green: #2563eb;
+  --violet: #2563eb;
+  --amber: #dc2626;
+  --red: #dc2626;
+  --cyan-bg: rgba(37, 99, 235, .1);
+  --blue-bg: rgba(37, 99, 235, .1);
+  --green-bg: rgba(37, 99, 235, .1);
+  --amber-bg: rgba(220, 38, 38, .1);
+  --red-bg: rgba(220, 38, 38, .1);
+  --shield-gradient: linear-gradient(135deg, #1d4ed8, #2563eb);
+  --water-gradient: linear-gradient(135deg, #1d4ed8, #2563eb);
+  --ready-gradient: linear-gradient(135deg, #1d4ed8, #2563eb);
+  --danger-gradient: linear-gradient(135deg, #dc2626, #991b1b);
+}
+
+body {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.9), rgba(238,242,247,.96) 38%),
+    var(--bg);
+}
+
+.landing-brand,
+.link-button,
+.mobile-card-head a,
+.resident-card-head a,
+.event-card strong,
+.visual-metrics strong {
+  color: var(--blue);
+}
+
+.btn-primary,
+.filter-row button.active,
+.range-tabs button.active,
+.role-tabs button.active,
+.admin-tabs button.active,
+.responder-action-grid-mobile .primary {
+  color: #ffffff;
+  background: var(--water-gradient);
+  box-shadow: 0 12px 28px rgba(37,99,235,.18);
+}
+
+.btn-danger,
+.btn-warning,
+.sos-button,
+.resident-sos-nav .bottom-sos-button {
+  color: #ffffff;
+  background: var(--danger-gradient);
+  box-shadow: 0 14px 28px rgba(220,38,38,.22);
+}
+
+.badge.safe,
+.badge.info {
+  color: #1d4ed8;
+  background: rgba(37,99,235,.1);
+  border-color: rgba(37,99,235,.18);
+}
+
+.badge.warning,
+.badge.danger {
+  color: #b91c1c;
+  background: rgba(220,38,38,.1);
+  border-color: rgba(220,38,38,.2);
+}
+
+.toast.success,
+.toast.info {
+  color: #1d4ed8;
+  border-color: rgba(37,99,235,.24);
+}
+
+.toast.warning,
+.toast.error {
+  color: #b91c1c;
+  border-color: rgba(220,38,38,.24);
+}
+
+.metric:before,
+.metric.safe:before,
+.metric.info:before,
+.timeline-item:before,
+.timeline-item.safe:before,
+.timeline-item.info:before {
+  background: var(--blue);
+}
+
+.metric.warning:before,
+.metric.danger:before,
+.timeline-item.warning:before,
+.timeline-item.danger:before {
+  background: var(--red);
+}
+
+.metric-icon,
+.metric.safe .metric-icon,
+.metric.info .metric-icon {
+  color: var(--blue);
+  background: rgba(37,99,235,.1);
+}
+
+.metric.warning .metric-icon,
+.metric.danger .metric-icon {
+  color: var(--red);
+  background: rgba(220,38,38,.1);
+}
+
+.status-banner,
+.resident-hero,
+.responder-hero,
+.responder-hero-mobile,
+.resident-alert-summary,
+.responder-alert-command,
+.active-alert,
+.recommended-route {
+  border-color: rgba(37,99,235,.18);
+  background: linear-gradient(135deg, #ffffff, rgba(37,99,235,.07));
+}
+
+.status-banner.safe,
+.resident-hero.safe,
+.responder-hero-mobile.safe,
+.resident-alert-summary.safe,
+.responder-alert-command.safe,
+.active-alert.safe {
+  border-color: rgba(37,99,235,.18);
+  background: linear-gradient(135deg, #ffffff, rgba(37,99,235,.07));
+}
+
+.status-banner.warning,
+.status-banner.danger,
+.resident-hero.warning,
+.resident-hero.danger,
+.responder-hero-mobile.warning,
+.responder-hero-mobile.danger,
+.resident-alert-summary.warning,
+.resident-alert-summary.danger,
+.responder-alert-command.warning,
+.responder-alert-command.danger,
+.active-alert.warning,
+.active-alert.danger,
+.override-card {
+  border-color: rgba(220,38,38,.2);
+  background: linear-gradient(135deg, #ffffff, rgba(220,38,38,.08));
+}
+
+.status-banner:before,
+.status-banner.safe:before {
+  background: var(--blue);
+}
+
+.status-banner.warning:before,
+.status-banner.danger:before {
+  background: var(--red);
+}
+
+.resident-alert,
+.mobile-route-item.warning,
+.mobile-route-item.alert.warning,
+.mobile-route-item.danger,
+.mobile-route-item.alert.danger,
+.mobile-alert-item.warning,
+.mobile-alert-item.danger,
+.mobile-center-item.rescue-request-card.warning,
+.mobile-center-item.rescue-request-card.danger,
+.rescue-request-card.warning,
+.rescue-request-card.danger,
+.sample-alert {
+  color: var(--text);
+  border-color: rgba(220,38,38,.22);
+  background: rgba(220,38,38,.08);
+}
+
+.mobile-route-item strong,
+.mobile-center-item strong,
+.mobile-alert-item strong,
+.responder-stat-grid strong {
+  color: #0f172a;
+}
+
+.mobile-route-item small,
+.mobile-center-item small,
+.mobile-alert-item p,
+.mobile-alert-item span,
+.mobile-alert-item small,
+.responder-stat-grid small {
+  color: #475569;
+}
+
+.mobile-card.featured {
+  color: #ffffff;
+  border-color: #15171a;
+  background: linear-gradient(135deg, #15171a, #252b34);
+}
+
+.mobile-card.featured .eyebrow,
+.mobile-card.featured p,
+.mobile-card.featured small,
+.resident-card.route .eyebrow,
+.resident-card.route p,
+.resident-card.route small {
+  color: rgba(255,255,255,.72);
+}
+
+.mobile-card.featured .mobile-mini-grid span,
+.resident-card.route .resident-mini-grid span {
+  border-color: rgba(255,255,255,.16);
+  background: rgba(255,255,255,.1);
+}
+
+.mobile-card.featured .mobile-mini-grid strong,
+.resident-card.route .resident-mini-grid strong {
+  color: #ffffff;
+}
+
+.resident-action-grid svg,
+.responder-action-grid-mobile svg,
+.feature-card span,
+.metric-icon svg {
+  color: var(--blue);
+}
+
+.rain-panel:after {
+  background: linear-gradient(transparent, rgba(37,99,235,.08));
+}
+
+.threshold-bar,
+.threshold-bar.safe {
+  background: var(--blue);
+}
+
+.threshold-bar.warning,
+.threshold-bar.danger {
+  background: var(--red);
+}
+
+.legend-dot,
+.legend-dot.center,
+.offline-pin.sensor:before,
+.offline-pin.sensor.safe:before,
+.offline-pin.center:before,
+.map-route,
+.map-pin.center:before,
+.landing-pin.center b {
+  background: var(--blue);
+}
+
+.legend-dot.zone,
+.offline-pin.sensor.warning:before,
+.offline-pin.sensor.danger:before,
+.map-pin.warning:before,
+.map-pin.danger:before,
+.landing-pin.warning b,
+.landing-pin.danger b {
+  background: var(--red);
+}
+
+.map-route {
+  stroke: var(--blue);
+  filter: drop-shadow(0 0 10px rgba(37,99,235,.28));
+}
+
+.map-creek {
+  stroke: rgba(37,99,235,.9);
+}
+
+.offline-zone,
+.offline-zone.zone-b,
+.area-risk {
+  border-color: rgba(220,38,38,.34);
+  background: rgba(220,38,38,.12);
+  stroke: rgba(220,38,38,.32);
+}
+
+.landing-water {
+  background:
+    linear-gradient(180deg, transparent, rgba(37,99,235,.06)),
+    repeating-linear-gradient(105deg, transparent 0 34px, rgba(37,99,235,.1) 35px 37px);
+}
+
+.login-visual {
+  background:
+    linear-gradient(135deg, rgba(37,99,235,.24), transparent 52%),
+    linear-gradient(180deg, #111315, #252b34);
+}
+
+.role-desc {
+  background: rgba(37,99,235,.07);
+  border-color: rgba(37,99,235,.18);
+}
+
+/* Minimal card system */
+:root {
+  --card-bg: #ffffff;
+  --card-soft: #f7f8fa;
+  --card-border: rgba(15, 23, 42, .08);
+  --card-border-strong: rgba(15, 23, 42, .14);
+  --card-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+}
+
+.card,
+.metric,
+.mobile-card,
+.resident-card,
+.status-banner,
+.resident-hero,
+.responder-hero,
+.responder-hero-mobile,
+.active-alert,
+.channel-card,
+.route-card,
+.sensor-card,
+.event-card,
+.timeline-item,
+.mobile-route-item,
+.mobile-center-item,
+.mobile-alert-item,
+.resident-alert,
+.resident-request-card,
+.status-details div,
+.setting-row,
+.table-wrap,
+.rain-panel {
+  color: var(--text);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow);
+}
+
+.card,
+.metric,
+.mobile-card,
+.resident-card,
+.status-banner,
+.resident-hero,
+.responder-hero,
+.responder-hero-mobile,
+.active-alert {
+  overflow: hidden;
+}
+
+.card-pad {
+  padding: 18px;
+}
+
+.card-header,
+.mobile-card-head,
+.resident-card-head {
+  min-height: 28px;
+  margin-bottom: 10px;
+}
+
+.card h3,
+.mobile-card h2,
+.mobile-card h3,
+.resident-card h3,
+.timeline-title,
+.mobile-route-item strong,
+.mobile-center-item strong,
+.mobile-alert-item strong {
+  color: #111827;
+}
+
+.card p,
+.mobile-card p,
+.resident-card p,
+.timeline-desc,
+.mobile-route-item small,
+.mobile-center-item small,
+.mobile-alert-item p,
+.mobile-alert-item span,
+.mobile-alert-item small {
+  color: #475569;
+}
+
+.eyebrow {
+  color: #7b8798;
+  letter-spacing: .55px;
+}
+
+.metric,
+.status-banner,
+.resident-hero,
+.responder-hero,
+.responder-hero-mobile,
+.active-alert,
+.recommended-route,
+.resident-alert-summary,
+.responder-alert-command {
+  border-left: 3px solid var(--blue);
+  background: var(--card-bg);
+}
+
+.metric.warning,
+.metric.danger,
+.status-banner.warning,
+.status-banner.danger,
+.resident-hero.warning,
+.resident-hero.danger,
+.responder-hero-mobile.warning,
+.responder-hero-mobile.danger,
+.active-alert.warning,
+.active-alert.danger,
+.resident-alert-summary.warning,
+.resident-alert-summary.danger,
+.responder-alert-command.warning,
+.responder-alert-command.danger,
+.override-card,
+.resident-request-card,
+.resident-alert,
+.mobile-route-item.warning,
+.mobile-route-item.danger,
+.mobile-route-item.alert.warning,
+.mobile-route-item.alert.danger,
+.mobile-alert-item.warning,
+.mobile-alert-item.danger,
+.rescue-request-card.warning,
+.rescue-request-card.danger {
+  border-color: rgba(220,38,38,.16);
+  border-left: 3px solid var(--red);
+  background: #fffafa;
+}
+
+.metric:before,
+.status-banner:before,
+.active-alert:after {
+  display: none;
+}
+
+.metric-icon,
+.metric.safe .metric-icon,
+.metric.info .metric-icon,
+.metric.warning .metric-icon,
+.metric.danger .metric-icon {
+  width: 34px;
+  height: 34px;
+  color: var(--blue);
+  border: 1px solid rgba(37,99,235,.1);
+  border-radius: 8px;
+  background: rgba(37,99,235,.07);
+}
+
+.metric.warning .metric-icon,
+.metric.danger .metric-icon {
+  color: var(--red);
+  border-color: rgba(220,38,38,.12);
+  background: rgba(220,38,38,.07);
+}
+
+.metric-value {
+  margin-top: 10px;
+  font-size: clamp(1.35rem, 2vw, 1.9rem);
+}
+
+.metric-caption {
+  margin-top: 6px;
+}
+
+.mobile-card.featured,
+.resident-card.route {
+  color: var(--text);
+  border-color: var(--card-border);
+  border-left: 3px solid var(--blue);
+  background: var(--card-bg);
+}
+
+.mobile-card.featured h2,
+.mobile-card.featured h3,
+.mobile-card.featured .mobile-mini-grid strong,
+.resident-card.route h3,
+.resident-card.route .resident-mini-grid strong {
+  color: #111827;
+}
+
+.mobile-card.featured .eyebrow,
+.mobile-card.featured p,
+.mobile-card.featured small,
+.resident-card.route .eyebrow,
+.resident-card.route p,
+.resident-card.route small {
+  color: #475569;
+}
+
+.mobile-mini-grid span,
+.resident-mini-grid span,
+.responder-stat-grid span,
+.mobile-card.featured .mobile-mini-grid span,
+.resident-card.route .resident-mini-grid span {
+  min-height: 48px;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  background: var(--card-soft);
+  box-shadow: none;
+}
+
+.mobile-mini-grid strong,
+.resident-mini-grid strong,
+.responder-stat-grid strong,
+.mobile-card.featured .mobile-mini-grid strong,
+.resident-card.route .resident-mini-grid strong {
+  color: #111827;
+}
+
+.mobile-mini-grid small,
+.resident-mini-grid small,
+.responder-stat-grid small,
+.mobile-card.featured .mobile-mini-grid small,
+.resident-card.route .resident-mini-grid small {
+  color: #7b8798;
+}
+
+.timeline-item {
+  padding-left: 34px;
+}
+
+.timeline-item:before {
+  left: 14px;
+  width: 8px;
+  height: 8px;
+  background: var(--blue);
+}
+
+.timeline-item.warning:before,
+.timeline-item.danger:before {
+  background: var(--red);
+}
+
+.mobile-route-item,
+.mobile-center-item,
+.mobile-alert-item,
+.channel-card,
+.route-card,
+.sensor-card,
+.event-card {
+  background: var(--card-bg);
+}
+
+.mobile-route-item.warning,
+.mobile-route-item.danger,
+.mobile-alert-item.warning,
+.mobile-alert-item.danger,
+.rescue-request-card.warning,
+.rescue-request-card.danger {
+  background: #fffafa;
+}
+
+.card .btn,
+.mobile-card .btn,
+.resident-card .btn,
+.mobile-route-item .btn,
+.mobile-center-item .btn,
+.mobile-alert-item .btn {
+  min-height: 36px;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.card .btn-secondary,
+.mobile-card .btn-secondary,
+.resident-card .btn-secondary,
+.mobile-route-item .btn-secondary,
+.mobile-center-item .btn-secondary,
+.mobile-alert-item .btn-secondary {
+  background: #ffffff;
+  border-color: var(--card-border-strong);
+}
+
+.card .btn-primary,
+.mobile-card .btn-primary,
+.resident-card .btn-primary {
+  background: #2563eb;
+}
+
+.card .btn-danger,
+.mobile-card .btn-danger,
+.resident-card .btn-danger {
+  background: #dc2626;
+}
+
+.resident-level,
+.responder-level-mobile {
+  border-radius: 8px;
+  background: #111315;
+  box-shadow: none;
+}
+
+.resident-action-grid button,
+.resident-action-grid a,
+.responder-action-grid-mobile button,
+.responder-action-grid-mobile a {
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: var(--card-shadow);
+}
+
+.mobile-app,
+.resident-phone {
+  background: #f8fafc;
+}

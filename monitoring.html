@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Live Monitoring | RESCUE-IOT</title>
+  <link rel="icon" href="assets/May%207,%202026,%2007_38_44%20PM%20(1).png" type="image/png">
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/monitoring.css">
+  <link rel="stylesheet" href="css/palette.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <aside class="sidebar" id="sidebar"></aside>
+  <header class="top-header" id="top-header"></header>
+  <main class="main-content"><div class="content-area" id="monitoring-root"></div></main>
+  <script type="module">
+    import "./js/firebase.js";
+    await import("./js/app.js");
+    await import("./js/data.js");
+    await import("./js/charts.js");
+    await import("./js/monitoring.js");
+  </script>
+</body>
+</html>
