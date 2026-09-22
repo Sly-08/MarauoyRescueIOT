@@ -85,195 +85,11 @@
        ======================================================= */
 
     loadSavedData() {
-
-      /* -----------------------------------------------------
-         Thresholds
-         ----------------------------------------------------- */
-
-      try {
-        const stored =
-          JSON.parse(
-            localStorage.getItem(
-              "rescue_thresholds"
-            ) || "null"
-          );
-
-        if (
-          stored &&
-          typeof stored === "object" &&
-          RescueData.thresholds
-        ) {
-          RescueData.thresholds = {
-            ...RescueData.thresholds,
-
-            safe: {
-              ...(RescueData.thresholds.safe || {}),
-              ...(stored.safe || {})
-            },
-
-            warning: {
-              ...(RescueData.thresholds.warning || {}),
-              ...(stored.warning || {})
-            },
-
-            danger: {
-              ...(RescueData.thresholds.danger || {}),
-              ...(stored.danger || {})
-            }
-          };
-        }
-      } catch (error) {
-        console.warn(
-          "Unable to restore thresholds:",
-          error
-        );
-      }
-
-      /* -----------------------------------------------------
-         Sensors
-         ----------------------------------------------------- */
-
-      try {
-        const stored =
-          JSON.parse(
-            localStorage.getItem(
-              "rescue_sensors"
-            ) || "null"
-          );
-
-        if (Array.isArray(stored)) {
-          RescueData.sensors = stored;
-        }
-      } catch (error) {
-        console.warn(
-          "Unable to restore sensors:",
-          error
-        );
-      }
-
-      /* -----------------------------------------------------
-         System Settings
-         ----------------------------------------------------- */
-
-      try {
-        const stored =
-          JSON.parse(
-            localStorage.getItem(
-              "rescue_system_settings"
-            ) || "{}"
-          );
-
-        if (
-          stored &&
-          typeof stored === "object"
-        ) {
-          if (
-            RescueData.system &&
-            Object.prototype.hasOwnProperty.call(
-              stored,
-              "siren"
-            )
-          ) {
-            RescueData.system.siren =
-              stored.siren;
-          }
-
-          if (
-            RescueData.system &&
-            Object.prototype.hasOwnProperty.call(
-              stored,
-              "lights"
-            )
-          ) {
-            RescueData.system.lights =
-              stored.lights;
-          }
-
-          if (
-            RescueData.system &&
-            Object.prototype.hasOwnProperty.call(
-              stored,
-              "smsGateway"
-            )
-          ) {
-            RescueData.system.gsm =
-              stored.smsGateway;
-          }
-        }
-      } catch (error) {
-        console.warn(
-          "Unable to restore system settings:",
-          error
-        );
-      }
-
-      /* -----------------------------------------------------
-         Announcements
-         ----------------------------------------------------- */
-
-      try {
-        const stored =
-          JSON.parse(
-            localStorage.getItem(
-              "rescue_announcements"
-            ) || "null"
-          );
-
-        if (
-          Array.isArray(stored) &&
-          Array.isArray(
-            RescueData.communityUpdates
-          )
-        ) {
-          /*
-           * Keep newest announcements first,
-           * matching the application's community update usage.
-           */
-          RescueData.communityUpdates =
-            stored
-              .slice()
-              .reverse()
-              .map(item => ({
-                time: item.time || "",
-                author: item.author || "",
-                title: item.title || "",
-                message: item.message || ""
-              }));
-        }
-      } catch (error) {
-        console.warn(
-          "Unable to restore announcements:",
-          error
-        );
-      }
-
-      /* -----------------------------------------------------
-         Emergency Override
-         ----------------------------------------------------- */
-
-      try {
-        const override =
-          JSON.parse(
-            localStorage.getItem(
-              "rescue_override"
-            ) || "null"
-          );
-
-        if (
-          override &&
-          override.active &&
-          Array.isArray(
-            RescueData.alertChannels
-          )
-        ) {
-          this.applyOverrideToChannels();
-        }
-      } catch (error) {
-        console.warn(
-          "Unable to restore emergency override:",
-          error
-        );
-      }
+      /*
+       * Operational/admin data is now loaded from Firebase
+       * through RescueData subscriptions. Keep this method only
+       * for backwards compatibility with older callers.
+       */
     },
 
     /* =======================================================
@@ -2330,35 +2146,45 @@
         return;
       }
 
-      this.saveThresholds();
-
-      App.toast(
-        `${key} threshold updated.`,
-        "success"
-      );
-
-      this.render();
+      this.saveThresholds()
+        .then(() => {
+          App.toast(
+            `${key} threshold updated.`,
+            "success"
+          );
+          this.render();
+        })
+        .catch(() => {});
     },
 
-    saveThresholds() {
+    async saveThresholds() {
 
       try {
-        localStorage.setItem(
-          "rescue_thresholds",
-          JSON.stringify(
-            RescueData.thresholds
-          )
-        );
+        if (
+          !RescueData ||
+          typeof RescueData.saveSettings !== "function"
+        ) {
+          throw new Error(
+            "Firebase settings service is unavailable."
+          );
+        }
+
+        await RescueData.saveSettings({
+          thresholds: RescueData.thresholds
+        });
+
       } catch (error) {
         console.error(
-          "Unable to save thresholds:",
+          "Unable to save thresholds to Firebase:",
           error
         );
 
         App.toast(
-          "Unable to save threshold changes.",
+          "Unable to save threshold changes to Firebase.",
           "danger"
         );
+
+        throw error;
       }
     },
 

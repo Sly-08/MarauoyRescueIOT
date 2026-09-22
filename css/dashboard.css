@@ -1275,3 +1275,323 @@ body.resident-mode {
     box-shadow: none;
   }
 }
+
+
+/* Clean resident and responder dashboard refresh */
+.resident-shell {
+  padding: 16px;
+}
+.resident-phone,
+.responder-app {
+  gap: 12px;
+}
+.resident-hero,
+.responder-hero-mobile {
+  box-shadow: none;
+}
+.resident-card,
+.responder-app .mobile-card {
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+}
+.resident-action-grid button,
+.resident-action-grid a,
+.responder-action-grid-mobile button,
+.responder-action-grid-mobile a {
+  transition: transform .16s ease, border-color .16s ease, background .16s ease;
+}
+.resident-action-grid button:hover,
+.resident-action-grid a:hover,
+.responder-action-grid-mobile button:hover,
+.responder-action-grid-mobile a:hover {
+  transform: translateY(-1px);
+}
+.responder-app .mobile-card-head {
+  margin-bottom: 10px;
+}
+.responder-stat-grid {
+  gap: 8px;
+}
+.responder-stat-grid span {
+  border-radius: 14px;
+}
+@media (min-width: 761px) {
+  .resident-phone,
+  .responder-app {
+    width: min(100%, 520px);
+  }
+}
+@media (max-width: 560px) {
+  .resident-shell {
+    padding: 10px;
+  }
+  .resident-phone {
+    border-radius: 22px;
+    padding: 14px 12px 82px;
+  }
+  .resident-hero {
+    grid-template-columns: 1fr;
+  }
+  .resident-level {
+    width: 74px;
+    height: 74px;
+  }
+  .resident-level strong {
+    font-size: 1.45rem;
+  }
+}
+
+
+/* =========================================================
+   Resident / Responder responsive cleanup
+========================================================= */
+
+.resident-shell,
+.mobile-app-shell {
+  width: 100%;
+  max-width: 100%;
+}
+
+.resident-phone,
+.responder-app {
+  width: min(100%, 560px);
+  margin-inline: auto;
+}
+
+.resident-action-grid,
+.responder-action-grid-mobile {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.resident-action-grid > *,
+.responder-action-grid-mobile > * {
+  min-width: 0;
+}
+
+.resident-card,
+.mobile-card {
+  overflow: hidden;
+}
+
+.resident-card p,
+.mobile-card p,
+.resident-request-card p {
+  overflow-wrap: anywhere;
+}
+
+.responder-app .request-actions {
+  min-width: 0;
+}
+
+.responder-app .request-actions .btn {
+  min-height: 40px;
+}
+
+@media (min-width: 900px) {
+  .resident-phone,
+  .responder-app {
+    width: min(100%, 680px);
+  }
+
+  .resident-action-grid,
+  .responder-action-grid-mobile {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .resident-shell {
+    padding: 8px;
+  }
+
+  .resident-phone,
+  .responder-app {
+    width: 100%;
+    border-radius: 18px;
+  }
+
+  .resident-action-grid,
+  .responder-action-grid-mobile {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .resident-action-grid > *,
+  .responder-action-grid-mobile > * {
+    min-height: 64px;
+  }
+
+  .resident-bottom-nav {
+    width: calc(100% - 16px);
+  }
+
+  .responder-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .responder-stat-grid span {
+    min-width: 0;
+  }
+
+  .responder-stat-grid strong {
+    font-size: 1rem;
+  }
+
+  .responder-stat-grid small {
+    font-size: .62rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .resident-action-grid,
+  .responder-action-grid-mobile {
+    grid-template-columns: 1fr;
+  }
+
+  .resident-bottom-nav a span,
+  .resident-bottom-nav button span {
+    font-size: .56rem;
+  }
+}
+
+
+@media (min-width: 900px) {
+  .resident-phone,
+  .responder-app {
+    width: min(100%, 920px);
+    max-width: 920px;
+  }
+
+  .resident-phone {
+    padding: 18px 18px 96px;
+  }
+
+  .responder-app {
+    padding: 18px 18px 96px;
+  }
+
+  .resident-hero,
+  .responder-hero-mobile {
+    padding: 22px;
+  }
+
+  .resident-card,
+  .responder-app .mobile-card {
+    padding: 18px;
+  }
+
+  .resident-action-grid,
+  .responder-action-grid-mobile {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .responder-app .mobile-route-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .responder-app .mobile-route-list > .empty-state {
+    grid-column: 1 / -1;
+  }
+}
+
+
+/* =========================================================
+   CLEAN RESPONSIVE DASHBOARDS
+   ========================================================= */
+@media (min-width: 761px) {
+  .resident-phone {
+    width: min(100%, 560px);
+    min-height: auto;
+  }
+
+  .responder-app {
+    width: min(100%, 1120px);
+  }
+
+  .responder-action-grid-mobile {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .mobile-route-item {
+    align-items: center;
+  }
+}
+
+@media (max-width: 760px) {
+  .status-banner {
+    padding: 18px;
+  }
+
+  .status-main strong {
+    font-size: clamp(2rem, 12vw, 3.2rem);
+  }
+
+  .resident-shell {
+    padding: 0;
+  }
+
+  .resident-phone {
+    width: 100%;
+    min-height: 100vh;
+    border-radius: 0;
+    padding: 14px 12px 84px;
+  }
+
+  .resident-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .resident-level {
+    width: 100%;
+    height: auto;
+    min-height: 76px;
+    border-radius: var(--radius);
+  }
+
+  .resident-action-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .resident-action-grid button,
+  .resident-action-grid a {
+    min-height: 72px;
+    min-width: 0;
+  }
+
+  .resident-mini-grid,
+  .responder-action-grid-mobile {
+    grid-template-columns: 1fr;
+  }
+
+  .mobile-route-item {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .request-actions {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .request-actions .btn {
+    flex: 1 1 140px;
+  }
+}
+
+@media (max-width: 420px) {
+  .resident-phone {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .resident-action-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .resident-action-grid button,
+  .resident-action-grid a {
+    min-height: 64px;
+  }
+}

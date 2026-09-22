@@ -666,3 +666,122 @@
   }
 }
 
+
+
+/* =========================================================
+   Responder GPS marker
+========================================================= */
+
+.responder-map-marker {
+  background: transparent;
+  border: 0;
+}
+
+.responder-map-marker span {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #2563eb;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.22);
+  font-size: 20px;
+}
+
+
+/* Firebase-only map fallback */
+.firebase-map-fallback {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 10px;
+  padding: 24px;
+  text-align: center;
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.firebase-map-fallback-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--blue-bg);
+  color: var(--blue);
+  font-size: 1.6rem;
+}
+
+.firebase-map-fallback p {
+  max-width: 460px;
+  color: var(--muted);
+}
+
+.firebase-map-fallback-grid {
+  width: min(100%, 420px);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.firebase-map-fallback-grid > div,
+.firebase-map-fallback-list > div {
+  display: grid;
+  gap: 3px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.firebase-map-fallback-grid span,
+.firebase-map-fallback-list span,
+.firebase-map-fallback-list small {
+  color: var(--muted);
+  font-size: .72rem;
+}
+
+.firebase-map-fallback-list {
+  width: min(100%, 520px);
+  display: grid;
+  gap: 6px;
+  text-align: left;
+}
+
+@media (max-width: 560px) {
+  .firebase-map-fallback {
+    padding: 16px;
+  }
+
+  .firebase-map-fallback-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 900px) {
+  .responder-map-panel,
+  .resident-map-panel {
+    height: min(62vh, 560px);
+  }
+}
+
+@media (max-width: 640px) {
+  .responder-map-panel,
+  .resident-map-panel {
+    height: 52vh;
+    min-height: 260px;
+    max-height: 430px;
+  }
+
+  .leaflet-control-zoom a {
+    width: 34px !important;
+    height: 34px !important;
+    line-height: 34px !important;
+  }
+
+  .leaflet-popup-content {
+    max-width: 240px;
+  }
+}

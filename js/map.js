@@ -1,12 +1,14 @@
 App.initPage(
   "map",
-  "Map & Evacuation",
-  "Sensors, flood-prone zones, routes, and evacuation centers"
+  "Marauoy Rescue Map",
+  "Barangay Marauoy, Lipa City"
 );
 
 window.RescueMap = {
   map: null,
   layers: {},
+  responderWatchId: null,
+  responderLocationSharing: false,
 
   escape(value) {
     return String(value ?? "")
@@ -22,36 +24,28 @@ window.RescueMap = {
   },
 
   getSensors() {
-    return Array.isArray(RescueData.sensors)
-      ? RescueData.sensors
-      : [];
+    return this.getMarauoyItems(RescueData.sensors);
   },
 
   getCenters() {
-    return Array.isArray(RescueData.evacuationCenters)
-      ? RescueData.evacuationCenters
-      : [];
+    return this.getMarauoyItems(RescueData.evacuationCenters);
   },
 
   getRoutes() {
-    return Array.isArray(RescueData.routes)
-      ? RescueData.routes
-      : [];
+    return this.getMarauoyItems(RescueData.routes);
   },
 
   getRoads() {
-    return Array.isArray(RescueData.roads)
-      ? RescueData.roads
-      : [];
+    return this.getMarauoyItems(RescueData.roads);
   },
 
   getRequests() {
     if (Array.isArray(RescueData.rescueRequests)) {
-      return RescueData.rescueRequests;
+      return this.getMarauoyItems(RescueData.rescueRequests);
     }
 
     if (typeof RescueData.openRescueRequests === "function") {
-      return RescueData.openRescueRequests();
+      return this.getMarauoyItems(RescueData.openRescueRequests());
     }
 
     return [];
@@ -62,6 +56,63 @@ window.RescueMap = {
       (request) =>
         String(request.status || "").toLowerCase() !== "resolved" &&
         String(request.status || "").toLowerCase() !== "closed"
+    );
+  },
+
+  isMarauoy(item) {
+    if (!item) return false;
+
+    const text = [
+      item.barangay,
+      item.location,
+      item.address,
+      item.name,
+      item.description
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    if (text.includes("marauoy") || text.includes("marawoy")) {
+      return true;
+    }
+
+    const latitude = Number(item.latitude ?? item.lat ?? item.location?.latitude);
+    const longitude = Number(item.longitude ?? item.lng ?? item.location?.longitude);
+
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      return false;
+    }
+
+    // Marauoy, Lipa City service area. Used only to keep the map focused
+    // when Firebase records do not include a barangay text field.
+    return (
+      latitude >= 13.94 &&
+      latitude <= 13.99 &&
+      longitude >= 121.14 &&
+      longitude <= 121.20
+    );
+  },
+
+  getMarauoyItems(items) {
+    return (Array.isArray(items) ? items : []).filter(item =>
+      this.isMarauoy(item)
+    );
+  },
+
+  getResponderLocations() {
+    return this.getMarauoyItems(
+      Array.isArray(RescueData.responderLocations)
+        ? RescueData.responderLocations
+        : []
+    );
+  },
+
+  getFloodZones() {
+    return this.getMarauoyItems(
+      Array.isArray(RescueData.floodZones)
+        ? RescueData.floodZones
+        : []
     );
   },
 
@@ -650,6 +701,57 @@ window.RescueMap = {
             <p>
               Open requests are shown on the map and list below for dispatch.
             </p>
+
+          </section>
+
+          <section class="mobile-card responder-location-card">
+
+            <div class="mobile-card-head">
+              <span class="eyebrow">
+                Responder Location
+              </span>
+
+              ${
+                typeof App.statusBadge === "function"
+                  ? App.statusBadge(
+                      this.responderLocationSharing
+                        ? "safe"
+                        : "warning",
+                      this.responderLocationSharing
+                        ? "Sharing"
+                        : "Not Sharing"
+                    )
+                  : ""
+              }
+            </div>
+
+            <p>
+              ${
+                this.responderLocationSharing
+                  ? "Your current GPS location is being shared with the rescue map."
+                  : "Share your GPS location so the team can see where you are."
+              }
+            </p>
+
+            <button
+              class="btn ${
+                this.responderLocationSharing
+                  ? "btn-secondary"
+                  : "btn-primary"
+              }"
+              type="button"
+              onclick="${
+                this.responderLocationSharing
+                  ? "RescueMap.stopResponderLocationSharing()"
+                  : "RescueMap.startResponderLocationSharing()"
+              }"
+            >
+              ${
+                this.responderLocationSharing
+                  ? "Stop Sharing Location"
+                  : "Share My Location"
+              }
+            </button>
 
           </section>
 
@@ -1344,6 +1446,15 @@ window.RescueMap = {
         </span>
 
         <span>
+          <i class="legend-symbol responder">
+            🚑
+          </i>
+          <strong>
+            Responder
+          </strong>
+        </span>
+
+        <span>
           <i class="legend-symbol zone"></i>
           <strong>
             Flood-prone / danger area
@@ -1421,11 +1532,21 @@ window.RescueMap = {
 
     this.layers = {};
 
+    const mapSeed =
+      this.getOpenRequests()
+        .concat(this.getResponderLocations())
+        .concat(this.getCenters())
+        .map(item => this.getCoordinates(item))
+        .find(Boolean) ||
+      null;
+
+    const marauoyCenter = [13.9644, 121.1657];
+
     this.map = L.map("rescue-map", {
       zoomControl: true
     }).setView(
-      [13.9425, 121.1615],
-      15
+      mapSeed || marauoyCenter,
+      mapSeed ? 15 : 15
     );
 
     console.log(
@@ -1456,9 +1577,13 @@ window.RescueMap = {
     this.layers["Rescue Requests"] =
       L.layerGroup().addTo(this.map);
 
+    this.layers["Responders"] =
+      L.layerGroup().addTo(this.map);
+
     this.addSensors();
     this.addCenters();
     this.addRescueRequests();
+    this.addResponderLocations();
     this.addFloodZones();
     this.addRoutes();
 
@@ -1495,15 +1620,6 @@ window.RescueMap = {
 
         const level =
           Number(sensor.level) || 0;
-
-        const rainfall =
-          Number(sensor.rainfall) || 0;
-
-        const battery =
-          Number(sensor.battery) || 0;
-
-        const signal =
-          Number(sensor.signal) || 0;
 
         const marker = L.circleMarker(
           coords,
@@ -1551,25 +1667,6 @@ window.RescueMap = {
             ${this.escape(sensorStatus.label)}
 
             <br>
-
-            <strong>
-              Rainfall:
-            </strong>
-            ${rainfall} mm/hr
-
-            <br>
-
-            <strong>
-              Battery:
-            </strong>
-            ${battery}%
-
-            <br>
-
-            <strong>
-              Signal:
-            </strong>
-            ${signal}%
 
             <br>
 
@@ -1793,6 +1890,54 @@ window.RescueMap = {
                 request.note || ""
               )}
 
+              ${
+                Number.isFinite(
+                  Number(request.latitude)
+                ) &&
+                Number.isFinite(
+                  Number(request.longitude)
+                )
+                  ? `
+                    <br><br>
+                    <strong>GPS:</strong>
+                    ${Number(request.latitude).toFixed(6)},
+                    ${Number(request.longitude).toFixed(6)}
+
+                    ${
+                      Number.isFinite(
+                        Number(request.locationAccuracy)
+                      )
+                        ? `
+                          <br>
+                          <strong>Accuracy:</strong>
+                          ±${Math.round(
+                            Number(
+                              request.locationAccuracy
+                            )
+                          )} m
+                        `
+                        : ""
+                    }
+
+                    <br><br>
+
+                    <a
+                      class="btn btn-primary"
+                      target="_blank"
+                      rel="noopener"
+                      href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                        `${request.latitude},${request.longitude}`
+                      )}">
+                      Navigate to Resident
+                    </a>
+                  `
+                  : `
+                    <br><br>
+                    <strong>GPS:</strong>
+                    Not available
+                  `
+              }
+
             </div>
           `)
           .addTo(
@@ -1805,58 +1950,428 @@ window.RescueMap = {
   },
 
   /* ---------------------------------------------------------
+     Responder locations
+  --------------------------------------------------------- */
+
+  addResponderLocations() {
+
+    if (
+      !this.map ||
+      !this.layers.Responders
+    ) {
+      return;
+    }
+
+    const nowMs =
+      Date.now();
+
+    this.getResponderLocations().forEach(
+      responder => {
+
+        const latitude =
+          Number(
+            responder.latitude ??
+            responder.location?.latitude
+          );
+
+        const longitude =
+          Number(
+            responder.longitude ??
+            responder.location?.longitude
+          );
+
+        if (
+          !Number.isFinite(latitude) ||
+          !Number.isFinite(longitude)
+        ) {
+          return;
+        }
+
+        const updated =
+          this.toDate(
+            responder.updatedAt
+          );
+
+        const ageMs =
+          updated
+            ? nowMs -
+              updated.getTime()
+            : Infinity;
+
+        const status =
+          String(
+            responder.status ||
+            "Offline"
+          ).toLowerCase();
+
+        if (
+          status === "offline" ||
+          ageMs > 2 * 60 * 1000
+        ) {
+          return;
+        }
+
+        L.marker(
+          [latitude, longitude],
+          {
+            icon:
+              this.responderIcon()
+          }
+        )
+          .bindPopup(`
+            <div class="map-popup">
+
+              <strong>
+                ${this.escape(
+                  responder.name ||
+                  "Responder"
+                )}
+              </strong>
+
+              <br>
+
+              <strong>Status:</strong>
+              ${this.escape(
+                responder.status ||
+                "On Duty"
+              )}
+
+              <br>
+
+              <strong>GPS:</strong>
+              ${latitude.toFixed(6)},
+              ${longitude.toFixed(6)}
+
+              ${
+                Number.isFinite(
+                  Number(
+                    responder.accuracy
+                  )
+                )
+                  ? `
+                    <br>
+                    <strong>Accuracy:</strong>
+                    ±${Math.round(
+                      Number(
+                        responder.accuracy
+                      )
+                    )} m
+                  `
+                  : ""
+              }
+
+              <br>
+
+              <strong>Updated:</strong>
+              ${
+                updated
+                  ? updated.toLocaleTimeString(
+                      "en-PH"
+                    )
+                  : "Just now"
+              }
+
+            </div>
+          `)
+          .addTo(
+            this.layers.Responders
+          );
+
+      }
+    );
+
+  },
+
+  responderIcon() {
+
+    return L.divIcon({
+      className:
+        "responder-map-marker",
+      html:
+        "<span>🚑</span>",
+      iconSize:
+        [38, 38],
+      iconAnchor:
+        [19, 19],
+      popupAnchor:
+        [0, -19]
+    });
+
+  },
+
+  toDate(value) {
+
+    if (!value) {
+      return null;
+    }
+
+    if (
+      typeof value.toDate ===
+      "function"
+    ) {
+      return value.toDate();
+    }
+
+    const date =
+      new Date(value);
+
+    return Number.isNaN(
+      date.getTime()
+    )
+      ? null
+      : date;
+
+  },
+
+  startResponderLocationSharing() {
+
+    if (
+      !navigator.geolocation ||
+      typeof navigator.geolocation.watchPosition !==
+        "function"
+    ) {
+      App.toast(
+        "Your browser does not support location sharing.",
+        "error"
+      );
+      return;
+    }
+
+    const session =
+      this.getSession() || {};
+
+    if (
+      this.responderWatchId !==
+      null
+    ) {
+      return;
+    }
+
+    const responderId =
+      String(
+        session.email ||
+        session.id ||
+        session.name ||
+        "responder"
+      ).trim();
+
+    this.responderLocationSharing =
+      true;
+
+    this.renderResponder();
+
+    this.responderWatchId =
+      navigator.geolocation.watchPosition(
+        async position => {
+
+          const latitude =
+            Number(
+              position.coords.latitude
+            );
+
+          const longitude =
+            Number(
+              position.coords.longitude
+            );
+
+          const accuracy =
+            Number(
+              position.coords.accuracy
+            );
+
+          if (
+            !Number.isFinite(latitude) ||
+            !Number.isFinite(longitude)
+          ) {
+            return;
+          }
+
+          try {
+
+            await RescueData.updateResponderLocation(
+              responderId,
+              {
+                name:
+                  session.name ||
+                  "Responder",
+                email:
+                  session.email ||
+                  "",
+                status:
+                  "On Duty",
+                latitude,
+                longitude,
+                accuracy
+              }
+            );
+
+          } catch (error) {
+
+            console.error(
+              "RESCUE-IOT: Unable to save responder location:",
+              error
+            );
+
+          }
+
+        },
+
+        error => {
+
+          console.error(
+            "RESCUE-IOT: Responder location error:",
+            error
+          );
+
+          this.stopResponderLocationSharing(
+            true
+          );
+
+          App.toast(
+            "Unable to share your location. Please allow location access.",
+            "error"
+          );
+
+        },
+
+        {
+          enableHighAccuracy: true,
+          maximumAge: 5000,
+          timeout: 15000
+        }
+      );
+
+  },
+
+  async stopResponderLocationSharing(
+    silent = false
+  ) {
+
+    if (
+      this.responderWatchId !==
+      null
+    ) {
+
+      navigator.geolocation.clearWatch(
+        this.responderWatchId
+      );
+
+      this.responderWatchId =
+        null;
+
+    }
+
+    this.responderLocationSharing =
+      false;
+
+    const session =
+      this.getSession() || {};
+
+    try {
+
+      const responderId =
+        String(
+          session.email ||
+          session.id ||
+          session.name ||
+          "responder"
+        ).trim();
+
+      await RescueData.updateResponderLocation(
+        responderId,
+        {
+          name:
+            session.name ||
+            "Responder",
+          email:
+            session.email ||
+            "",
+          status:
+            "Offline"
+        }
+      );
+
+    } catch (error) {
+
+      console.warn(
+        "RESCUE-IOT: Unable to mark responder offline:",
+        error
+      );
+
+    }
+
+    if (!silent) {
+      App.toast(
+        "Location sharing stopped.",
+        "success"
+      );
+    }
+
+    this.renderResponder();
+
+  },
+
+  /* ---------------------------------------------------------
      Flood zones
   --------------------------------------------------------- */
 
   addFloodZones() {
-    if (!this.map) {
+    if (!this.map || !this.layers["Flood Zones"]) {
       return;
     }
 
-    /*
-     * These polygons represent the demo
-     * flood-prone areas around the study area.
-     */
+    const zones = this.getFloodZones();
 
-    L.polygon(
-      [
-        [13.9393, 121.1601],
-        [13.9403, 121.1634],
-        [13.9422, 121.1628],
-        [13.9413, 121.1596]
-      ],
-      {
-        color: "#f02b1d",
-        fillColor: "#f02b1d",
-        fillOpacity: 0.22
-      }
-    )
-      .bindPopup(
-        "<strong>Flood-Prone Zone A</strong><br>Monitor water levels closely."
-      )
-      .addTo(
-        this.layers["Flood Zones"]
-      );
+    zones.forEach(zone => {
+      const coordinates =
+        zone.coordinates ||
+        zone.polygon ||
+        zone.points;
 
-    L.polygon(
-      [
-        [13.9443, 121.1568],
-        [13.9468, 121.1582],
-        [13.9461, 121.1603],
-        [13.9439, 121.1591]
-      ],
-      {
-        color: "#dc2626",
-        fillColor: "#dc2626",
-        fillOpacity: 0.14
+      if (!Array.isArray(coordinates) || coordinates.length < 3) {
+        return;
       }
-    )
-      .bindPopup(
-        "<strong>Flood-Prone Zone B</strong><br>Responder monitoring area."
-      )
-      .addTo(
-        this.layers["Flood Zones"]
-      );
+
+      const normalized = coordinates
+        .map(point => {
+          if (Array.isArray(point) && point.length >= 2) {
+            return [Number(point[0]), Number(point[1])];
+          }
+
+          return [
+            Number(point?.latitude),
+            Number(point?.longitude)
+          ];
+        })
+        .filter(point =>
+          Number.isFinite(point[0]) &&
+          Number.isFinite(point[1])
+        );
+
+      if (normalized.length < 3) {
+        return;
+      }
+
+      const color =
+        zone.color ||
+        (String(zone.status || "").toLowerCase() === "danger"
+          ? "#dc2626"
+          : "#d97706");
+
+      L.polygon(normalized, {
+        color,
+        fillColor: color,
+        fillOpacity: Number(zone.fillOpacity) || 0.18,
+        weight: 2
+      })
+        .bindPopup(`
+          <div class="map-popup">
+            <strong>${this.escape(zone.name || "Flood-prone area")}</strong>
+            ${zone.description ? `<br>${this.escape(zone.description)}` : ""}
+          </div>
+        `)
+        .addTo(this.layers["Flood Zones"]);
+    });
   },
 
   /* ---------------------------------------------------------
@@ -1864,56 +2379,57 @@ window.RescueMap = {
   --------------------------------------------------------- */
 
   addRoutes() {
-    if (!this.map) {
+    if (!this.map || !this.layers["Evacuation Routes"]) {
       return;
     }
 
-    /*
-     * The current data.js stores route metadata,
-     * not route coordinate arrays. These lines are
-     * therefore the demo map geometry.
-     */
+    const routes = this.getRoutes();
 
-    L.polyline(
-      [
-        [13.9412, 121.1625],
-        [13.9405, 121.1640],
-        [13.9390, 121.1655]
-      ],
-      {
-        color: "#10a7e8",
-        weight: 5,
-        dashArray: "8 8"
-      }
-    )
-      .bindPopup(
-        "<strong>Central Safe Route</strong><br>Primary evacuation access."
-      )
-      .addTo(
-        this.layers[
-          "Evacuation Routes"
-        ]
-      );
+    routes.forEach(route => {
+      const coordinates =
+        route.coordinates ||
+        route.path ||
+        route.points;
 
-    L.polyline(
-      [
-        [13.9408, 121.1591],
-        [13.9420, 121.1680]
-      ],
-      {
-        color: "#2563eb",
-        weight: 5,
-        dashArray: "8 8"
+      if (!Array.isArray(coordinates) || coordinates.length < 2) {
+        return;
       }
-    )
-      .bindPopup(
-        "<strong>Riverside / Emergency Route</strong><br>Follow responder guidance."
-      )
-      .addTo(
-        this.layers[
-          "Evacuation Routes"
-        ]
-      );
+
+      const normalized = coordinates
+        .map(point => {
+          if (Array.isArray(point) && point.length >= 2) {
+            return [Number(point[0]), Number(point[1])];
+          }
+
+          return [
+            Number(point?.latitude),
+            Number(point?.longitude)
+          ];
+        })
+        .filter(point =>
+          Number.isFinite(point[0]) &&
+          Number.isFinite(point[1])
+        );
+
+      if (normalized.length < 2) {
+        return;
+      }
+
+      L.polyline(normalized, {
+        color: route.color || "#2563eb",
+        weight: Number(route.weight) || 5,
+        dashArray: route.dashArray || "8 8"
+      })
+        .bindPopup(`
+          <div class="map-popup">
+            <strong>${this.escape(route.name || "Evacuation route")}</strong>
+            ${route.description || route.instruction
+              ? `<br>${this.escape(route.description || route.instruction)}`
+              : ""}
+          </div>
+        `)
+        .addTo(this.layers["Evacuation Routes"]);
+    });
   },
 
   /* ---------------------------------------------------------
@@ -1950,201 +2466,46 @@ window.RescueMap = {
   --------------------------------------------------------- */
 
   fallbackMap() {
-    const sensors =
-      this.getSensors();
-
-    const centers =
-      this.getCenters();
-
-    const requests =
-      this.getOpenRequests();
-
-    const sensorPositions = [
-      [24, 48],
-      [39, 64],
-      [52, 43],
-      [72, 35],
-      [61, 55],
-      [30, 70]
-    ];
-
-    const centerPositions = [
-      [56, 62],
-      [67, 70],
-      [80, 48],
-      [72, 34]
-    ];
-
-    const rescuePositions = [
-      [46, 55],
-      [35, 58],
-      [54, 50],
-      [62, 64]
-    ];
-
-    const sensorPins =
-      sensors
-        .map(
-          (sensor, index) => {
-            const status =
-              this.getSensorStatus(
-                sensor
-              );
-
-            const position =
-              sensorPositions[index] ||
-              [50, 50];
-
-            const left =
-              position[0];
-
-            const top =
-              position[1];
-
-            return `
-              <span
-                class="offline-pin sensor ${this.escape(
-                  status.key
-                )}"
-                style="
-                  left:${left}%;
-                  top:${top}%
-                "
-              >
-
-                <strong>
-                  ${this.escape(
-                    sensor.id
-                  )}
-                </strong>
-
-                <small>
-                  ${
-                    Number(
-                      sensor.level
-                    ) || 0
-                  }
-                  cm
-                </small>
-
-              </span>
-            `;
-          }
-        )
-        .join("");
-
-    const centerPins =
-      centers
-        .slice(0, 4)
-        .map(
-          (center, index) => {
-            const position =
-              centerPositions[index] ||
-              [60, 60];
-
-            return `
-              <span
-                class="offline-pin center"
-                style="
-                  left:${position[0]}%;
-                  top:${position[1]}%
-                "
-              >
-
-                <strong>
-                  ${this.escape(
-                    center.name
-                  )}
-                </strong>
-
-                <small>
-                  ${
-                    Number(
-                      center.capacity
-                    ) || 0
-                  }
-                  pax
-                </small>
-
-              </span>
-            `;
-          }
-        )
-        .join("");
-
-    const rescuePins =
-      requests
-        .slice(0, 4)
-        .map(
-          (request, index) => {
-            const position =
-              rescuePositions[index] ||
-              [48, 56];
-
-            return `
-              <span
-                class="offline-rescue-pin"
-                style="
-                  left:${position[0]}%;
-                  top:${position[1]}%
-                "
-              >
-
-                ${App.icons.person}
-
-                <strong>
-                  ${this.escape(
-                    request.reporter ||
-                    "Resident"
-                  )}
-                </strong>
-
-              </span>
-            `;
-          }
-        )
-        .join("");
+    const requests = this.getOpenRequests();
+    const centers = this.getCenters();
 
     return `
-      <div class="offline-map">
+      <div class="firebase-map-fallback">
+        <div class="firebase-map-fallback-icon">⌖</div>
+        <strong>Map data is unavailable</strong>
+        <p>
+          The map could not be loaded. Firebase rescue data is still available below.
+        </p>
 
-        <div class="offline-map-grid"></div>
-
-        <div class="offline-zone zone-a"></div>
-
-        <div class="offline-zone zone-b"></div>
-
-        <div class="offline-route"></div>
-
-        ${sensorPins}
-        ${centerPins}
-        ${rescuePins}
-
-        <div class="offline-map-note">
-
-          <strong>
-            Offline Map Mode
-          </strong>
-
-          <span>
-            Leaflet tiles unavailable.
-            Static evacuation overlay remains
-            available for demo use.
-          </span>
-
+        <div class="firebase-map-fallback-grid">
+          <div>
+            <strong>${requests.length}</strong>
+            <span>open rescue requests</span>
+          </div>
+          <div>
+            <strong>${centers.length}</strong>
+            <span>evacuation centers</span>
+          </div>
         </div>
 
-        <div
-          class="map-overlay-legend info legend"
-          style="
-            position:absolute;
-            bottom:18px;
-            right:18px;
-          "
-        >
-          ${this.legendInner()}
-        </div>
-
+        ${
+          requests.length
+            ? `<div class="firebase-map-fallback-list">
+                ${requests.slice(0, 5).map(request => `
+                  <div>
+                    <strong>${this.escape(request.reporter || "Resident")}</strong>
+                    <span>${this.escape(request.type || "SOS")}</span>
+                    ${
+                      Number.isFinite(Number(request.latitude)) &&
+                      Number.isFinite(Number(request.longitude))
+                        ? `<small>GPS: ${Number(request.latitude).toFixed(5)}, ${Number(request.longitude).toFixed(5)}</small>`
+                        : `<small>GPS location unavailable</small>`
+                    }
+                  </div>
+                `).join("")}
+              </div>`
+            : `<p class="muted">No open rescue requests from Firebase.</p>`
+        }
       </div>
     `;
   },
@@ -2404,6 +2765,87 @@ window.RescueMap = {
     this.renderResponder();
   }
 };
+
+/* -----------------------------------------------------------
+   Live Firestore map updates
+----------------------------------------------------------- */
+
+window.addEventListener(
+  "RescueDataUpdated",
+  event => {
+
+    const collection =
+      event?.detail?.collection;
+
+    const liveCollections = [
+      "rescueRequests",
+      "responders",
+      "evacuationCenters",
+      "routes",
+      "floodZones",
+      "sensors"
+    ];
+
+    if (!liveCollections.includes(collection)) {
+      return;
+    }
+
+    const session =
+      window.RescueMap.getSession();
+
+    if (!session?.loggedIn) {
+      return;
+    }
+
+    if (
+      session.role === "responder" &&
+      collection === "rescueRequests"
+    ) {
+      window.RescueMap.renderResponder();
+      return;
+    }
+
+    if (
+      session.role === "resident" &&
+      [
+        "rescueRequests",
+        "evacuationCenters",
+        "routes",
+        "floodZones",
+        "sensors"
+      ].includes(collection)
+    ) {
+      window.RescueMap.renderResident();
+      return;
+    }
+
+    if (!window.RescueMap.map) {
+      return;
+    }
+
+    const layerMap = {
+      sensors: ["Sensors", "addSensors"],
+      evacuationCenters: ["Centers", "addCenters"],
+      routes: ["Evacuation Routes", "addRoutes"],
+      floodZones: ["Flood Zones", "addFloodZones"],
+      responders: ["Responders", "addResponderLocations"],
+      rescueRequests: ["Rescue Requests", "addRescueRequests"]
+    };
+
+    const target = layerMap[collection];
+
+    if (
+      target &&
+      window.RescueMap.layers[target[0]] &&
+      typeof window.RescueMap[target[1]] === "function"
+    ) {
+      window.RescueMap.layers[target[0]].clearLayers();
+      window.RescueMap[target[1]]();
+    }
+
+  }
+);
+
 
 /* -----------------------------------------------------------
    Start map

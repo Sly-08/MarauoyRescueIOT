@@ -4,6 +4,7 @@ let doc;
 let onSnapshot;
 let serverTimestamp;
 let updateDoc;
+let setDoc;
 
 let db = null;
 let rtdb = null;
@@ -48,6 +49,9 @@ const firebaseModulesReady =
 
         updateDoc =
           firestoreModule.updateDoc;
+
+        setDoc =
+          firestoreModule.setDoc;
 
         db =
           firebaseModule.db;
@@ -107,7 +111,7 @@ const firebaseModulesReady =
 
   const state = {
 
-    currentWaterLevel: 0,
+    currentWaterLevel: null,
 
     rainfall: {
       condition: "Unknown",
@@ -122,7 +126,6 @@ const firebaseModulesReady =
 },
 
     system: {
-      internet: "Connecting",
       gsm: "Unknown",
       siren: "Unknown",
       lights: "Unknown",
@@ -146,6 +149,8 @@ const firebaseModulesReady =
     requestLocations: [],
     hotlines: [],
     rescueRequests: [],
+    responders: [],
+    floodZones: [],
     readings: [],
 
 
@@ -304,10 +309,10 @@ const firebaseModulesReady =
 
   if (!Number.isFinite(value)) {
     return {
-      key: "safe",
-      label: "Normal",
-      color: "#059669",
-      action: "Waiting for a valid sensor reading."
+      key: "info",
+      label: "No live data",
+      color: "#64748b",
+      action: "Waiting for a live Firebase sensor reading."
     };
   }
 
@@ -410,6 +415,11 @@ const firebaseModulesReady =
 
       state.currentWaterLevel =
         level;
+
+    } else {
+
+      state.currentWaterLevel =
+        null;
 
     }
 
@@ -767,6 +777,19 @@ const firebaseModulesReady =
     get requestLocations() {
 
       return state.requestLocations;
+
+    },
+
+
+    get responderLocations() {
+
+      return state.responders;
+
+    },
+
+    get floodZones() {
+
+      return state.floodZones;
 
     },
 
@@ -1133,28 +1156,33 @@ const firebaseModulesReady =
        HISTORY
     =================================================== */
 
-    history(
-      hours = 6
-    ) {
+    history(hours = 6) {
+  const requestedHours = Number(hours);
 
-      return clone(
-        state.readings
-      )
+  const rangeHours =
+    Number.isFinite(requestedHours) && requestedHours > 0
+      ? requestedHours
+      : 6;
 
-        .slice(
+  const cutoff =
+    Date.now() -
+    rangeHours * 60 * 60 * 1000;
 
-          -Math.max(
+  return clone(state.readings)
+    .filter(item => {
+      const time = asDate(item.time);
 
-            1,
-
-            Number(hours) ||
-            6
-
-          )
-
-        );
-
-    },
+      return (
+        time.getTime() > 0 &&
+        time.getTime() >= cutoff
+      );
+    })
+    .sort(
+      (a, b) =>
+        asDate(a.time).getTime() -
+        asDate(b.time).getTime()
+    );
+},
 
 
     /* ===================================================
@@ -1249,6 +1277,46 @@ const firebaseModulesReady =
           request.location ||
           "Unknown location",
 
+        latitude:
+          Number.isFinite(
+            Number(request.latitude)
+          )
+            ? Number(request.latitude)
+            : null,
+
+        longitude:
+          Number.isFinite(
+            Number(request.longitude)
+          )
+            ? Number(request.longitude)
+            : null,
+
+        locationAccuracy:
+          Number.isFinite(
+            Number(request.locationAccuracy)
+          )
+            ? Number(request.locationAccuracy)
+            : null,
+
+        locationSource:
+          request.locationSource ||
+          "manual",
+
+        people:
+          Number.isFinite(
+            Number(request.people)
+          )
+            ? Math.max(
+                1,
+                Math.min(
+                  50,
+                  Math.round(
+                    Number(request.people)
+                  )
+                )
+              )
+            : 1,
+
         note:
           request.note ||
           "",
@@ -1295,6 +1363,128 @@ const firebaseModulesReady =
         time:
           localTime()
 
+      };
+
+    },
+
+
+    /* ===================================================
+       FIREBASE SETTINGS
+    =================================================== */
+
+    async saveSettings(
+      settings = {}
+    ) {
+      if (
+        !db ||
+        typeof setDoc !== "function" ||
+        typeof doc !== "function"
+      ) {
+        throw new Error(
+          "Firestore settings service is unavailable."
+        );
+      }
+
+      const clean = settings &&
+        typeof settings === "object"
+        ? settings
+        : {};
+
+      await setDoc(
+        doc(db, "settings", "app"),
+        clean,
+        { merge: true }
+      );
+
+      return clean;
+    },
+
+    /* ===================================================
+       UPDATE RESPONDER LOCATION
+    =================================================== */
+
+    async updateResponderLocation(
+      responderId,
+      data = {}
+    ) {
+
+      if (
+        !db ||
+        typeof setDoc !== "function"
+      ) {
+        throw new Error(
+          "Firestore responder location service is unavailable."
+        );
+      }
+
+      const id =
+        String(
+          responderId ||
+          ""
+        )
+          .trim();
+
+      if (!id) {
+        throw new Error(
+          "Responder ID is required."
+        );
+      }
+
+      const payload = {
+        responderId: id,
+        name:
+          data.name ||
+          "Responder",
+        email:
+          data.email ||
+          "",
+        status:
+          data.status ||
+          "offline",
+        location:
+          data.location || {
+            latitude:
+              Number(data.latitude),
+            longitude:
+              Number(data.longitude),
+            accuracy:
+              Number(data.accuracy) || null
+          },
+        latitude:
+          Number.isFinite(
+            Number(data.latitude)
+          )
+            ? Number(data.latitude)
+            : null,
+        longitude:
+          Number.isFinite(
+            Number(data.longitude)
+          )
+            ? Number(data.longitude)
+            : null,
+        accuracy:
+          Number.isFinite(
+            Number(data.accuracy)
+          )
+            ? Number(data.accuracy)
+            : null,
+        updatedAt:
+          serverTimestamp()
+      };
+
+      await setDoc(
+        doc(
+          db,
+          "responders",
+          id
+        ),
+        payload,
+        { merge: true }
+      );
+
+      return {
+        ...payload,
+        id
       };
 
     },
@@ -1394,25 +1584,6 @@ const firebaseModulesReady =
   }
 
   state.initialized = true;
-
-      /* Restore admin-configured thresholds for the dashboard. */
-      try {
-        const stored = JSON.parse(
-          localStorage.getItem("rescue_thresholds") || "null"
-        );
-        if (stored && typeof stored === "object") {
-          state.thresholds = {
-            ...state.thresholds,
-            ...stored,
-            safe: { ...state.thresholds.safe, ...(stored.safe || {}) },
-            warning: { ...state.thresholds.warning, ...(stored.warning || {}) },
-            danger: { ...state.thresholds.danger, ...(stored.danger || {}) }
-          };
-        }
-      } catch (error) {
-        console.warn("RESCUE-IOT: Unable to restore thresholds.", error);
-      }
-
 
       /* ===============================================
          ESP32 REALTIME DATABASE
@@ -1848,6 +2019,36 @@ const firebaseModulesReady =
 
 
       /* ===============================================
+         RESPONDER LOCATIONS
+      =============================================== */
+
+      subscribe(
+
+        "responders",
+
+        items => {
+
+          state.responders =
+            items;
+
+        }
+
+      );
+
+
+      /* ===============================================
+         FLOOD ZONES
+      =============================================== */
+
+      subscribe(
+        "floodZones",
+        items => {
+          state.floodZones = items;
+        }
+      );
+
+
+      /* ===============================================
          HISTORY
       =============================================== */
 
@@ -1956,6 +2157,27 @@ const firebaseModulesReady =
             state.study = {
               ...state.study,
               ...settings.study
+            };
+          }
+
+          if (
+            settings.thresholds
+          ) {
+            state.thresholds = {
+              ...state.thresholds,
+              ...settings.thresholds,
+              safe: {
+                ...state.thresholds.safe,
+                ...(settings.thresholds.safe || {})
+              },
+              warning: {
+                ...state.thresholds.warning,
+                ...(settings.thresholds.warning || {})
+              },
+              danger: {
+                ...state.thresholds.danger,
+                ...(settings.thresholds.danger || {})
+              }
             };
           }
         }

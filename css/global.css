@@ -101,3 +101,95 @@ h4 { font-size: .92rem; line-height: 1.2; font-weight: 800; }
 @media (max-width: 760px) {
   body { font-size: 15px; }
 }
+
+
+/* =========================================================
+   RESPONSIVE SYSTEM-WIDE REFINEMENT
+   Firebase-driven dashboards and field views
+========================================================= */
+
+html, body {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+button, a, input, select, textarea {
+  max-width: 100%;
+}
+
+.main-content,
+.page-content,
+.dashboard-page,
+.history-page {
+  min-width: 0;
+}
+
+.card,
+.mobile-card,
+.resident-card,
+.resident-hero,
+.responder-hero-mobile,
+.table-wrap {
+  min-width: 0;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 900px) {
+  :root {
+    --sidebar: 0px;
+    --header: 64px;
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+
+  .layout-2,
+  .layout-3,
+  .dashboard-grid,
+  .map-layout {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 640px) {
+  body {
+    font-size: 14px;
+  }
+
+  .page-content,
+  .main-content {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  .card-pad {
+    padding: 14px !important;
+  }
+
+  .card-header {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    min-height: 42px;
+  }
+
+  .data-table {
+    min-width: 620px;
+  }
+}
+
+@media (max-width: 390px) {
+  .page-content,
+  .main-content {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+}

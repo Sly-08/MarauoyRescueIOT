@@ -68,14 +68,6 @@ const App = {
     ],
 
     [
-      "monitoring",
-      "Live Monitoring",
-      "monitoring.html",
-      "activity",
-      ["admin", "responder"]
-    ],
-
-    [
       "map",
       "Map & Evacuation",
       "map.html",
@@ -1937,7 +1929,7 @@ return {
      SUBMIT RESIDENT SOS
      ========================================================= */
 
-  submitResidentSOS() {
+  async submitResidentSOS() {
 
     const session =
       this.getSession();
@@ -2057,12 +2049,110 @@ return {
       return null;
     }
 
+    let browserLocation = null;
+
+    if (
+      !navigator.geolocation ||
+      typeof navigator.geolocation.getCurrentPosition !==
+        "function"
+    ) {
+
+      this.toast(
+        "Your browser does not support location services. Please use a device with GPS/location enabled.",
+        "danger"
+      );
+
+      return null;
+
+    }
+
+    try {
+
+      browserLocation =
+        await new Promise(
+          (resolve, reject) => {
+
+            navigator.geolocation.getCurrentPosition(
+              position => {
+
+                const latitude =
+                  Number(
+                    position.coords.latitude
+                  );
+
+                const longitude =
+                  Number(
+                    position.coords.longitude
+                  );
+
+                const accuracy =
+                  Number(
+                    position.coords.accuracy
+                  );
+
+                if (
+                  !Number.isFinite(latitude) ||
+                  !Number.isFinite(longitude)
+                ) {
+                  reject(
+                    new Error(
+                      "Invalid GPS coordinates."
+                    )
+                  );
+                  return;
+                }
+
+                resolve({
+                  latitude,
+                  longitude,
+                  accuracy:
+                    Number.isFinite(
+                      accuracy
+                    )
+                      ? accuracy
+                      : null
+                });
+
+              },
+
+              error => {
+
+                reject(error);
+
+              },
+
+              {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 0
+              }
+            );
+
+          }
+        );
+
+    } catch (error) {
+
+      console.error(
+        "Unable to obtain resident location:",
+        error
+      );
+
+      this.toast(
+        "Location access is required to send an emergency request. Please allow location access and try again.",
+        "danger"
+      );
+
+      return null;
+
+    }
+
     let request;
 
     try {
 
       request =
-        data.addRescueRequest({
+        await data.addRescueRequest({
 
           type,
 
@@ -2079,6 +2169,20 @@ return {
               : session.email,
 
           location,
+
+          latitude:
+            browserLocation.latitude,
+
+          longitude:
+            browserLocation.longitude,
+
+          locationAccuracy:
+            browserLocation.accuracy,
+
+          locationSource:
+            "browser-gps",
+
+          people,
 
           note:
             requestNote,

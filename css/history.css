@@ -13,3 +13,132 @@
 .pagination {
   font-weight: 800;
 }
+
+
+.history-filter-card {
+  display: grid;
+  gap: 18px;
+}
+.history-filter-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.history-filter-head h3 {
+  margin-top: 4px;
+}
+.history-record-count {
+  color: var(--muted);
+  font-size: .82rem;
+  font-weight: 800;
+}
+.history-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.history-chart-box {
+  min-height: 300px;
+  position: relative;
+}
+.history-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: var(--muted);
+  font-weight: 800;
+  pointer-events: none;
+}
+.history-table-empty {
+  text-align: center;
+  padding: 28px !important;
+  color: var(--muted);
+}
+@media (max-width: 700px) {
+  .history-filter-head {
+    flex-direction: column;
+  }
+  .history-actions .btn {
+    flex: 1 1 auto;
+  }
+}
+@media print {
+  .sidebar,
+  .top-header,
+  .history-filter-card,
+  .history-actions,
+  .pagination {
+    display: none !important;
+  }
+  .main-content {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .history-page {
+    padding: 0 !important;
+  }
+}
+
+
+@media (max-width: 560px) {
+  .history-chart-box {
+    min-height: 240px;
+  }
+
+  .history-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .history-actions .btn {
+    width: 100%;
+  }
+
+  .pagination {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+
+/* Mobile/tablet overflow protection */
+@media (max-width: 760px) {
+  .card,
+  .panel,
+  .table-card,
+  .history-card,
+  .alert-card,
+  .admin-card {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .table-wrap,
+  .table-responsive,
+  .history-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table {
+    min-width: 620px;
+  }
+
+  .form-actions,
+  .action-row,
+  .toolbar,
+  .filters,
+  .history-filters {
+    flex-wrap: wrap;
+  }
+
+  button,
+  .btn,
+  a.btn {
+    max-width: 100%;
+  }
+}

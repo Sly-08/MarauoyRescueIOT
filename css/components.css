@@ -1067,3 +1067,81 @@ body.resident-mode .modal-actions {
   border-color: rgba(217,119,6,.24);
   background: #fff7ed;
 }
+
+
+/* =========================================================
+   RESCUE-IOT RESPONSIVE APP LAYOUT
+   ========================================================= */
+@media (min-width: 761px) {
+  .mobile-app-shell {
+    display: block;
+    width: 100%;
+    padding: 24px;
+  }
+
+  .mobile-app {
+    width: min(100%, 1120px);
+    min-height: auto;
+    margin: 0 auto;
+    border-radius: 20px;
+  }
+
+  .mobile-app.responder-app {
+    width: min(100%, 1180px);
+  }
+}
+
+@media (max-width: 760px) {
+  .mobile-app-shell {
+    padding: 0;
+  }
+
+  .mobile-app {
+    width: 100%;
+    min-height: 100vh;
+    border-radius: 0;
+    padding: 14px 12px 84px;
+  }
+
+  .mobile-card,
+  .resident-card,
+  .responder-hero-mobile {
+    min-width: 0;
+  }
+
+  .mobile-card-head {
+    flex-wrap: wrap;
+  }
+
+  .road-actions,
+  .request-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .road-actions .btn,
+  .request-actions .btn {
+    flex: 1 1 140px;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 420px) {
+  .mobile-app {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .mobile-card {
+    padding: 13px;
+  }
+
+  .responder-action-grid-mobile {
+    grid-template-columns: 1fr;
+  }
+
+  .responder-action-grid-mobile button,
+  .responder-action-grid-mobile a {
+    min-height: 64px;
+  }
+}

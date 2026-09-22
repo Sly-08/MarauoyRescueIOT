@@ -37,3 +37,43 @@
   border-color: rgba(220,38,38,.22);
   background: linear-gradient(135deg, rgba(220,38,38,.1), rgba(255,255,255,.92));
 }
+
+
+/* Mobile/tablet overflow protection */
+@media (max-width: 760px) {
+  .card,
+  .panel,
+  .table-card,
+  .history-card,
+  .alert-card,
+  .admin-card {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .table-wrap,
+  .table-responsive,
+  .history-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table {
+    min-width: 620px;
+  }
+
+  .form-actions,
+  .action-row,
+  .toolbar,
+  .filters,
+  .history-filters {
+    flex-wrap: wrap;
+  }
+
+  button,
+  .btn,
+  a.btn {
+    max-width: 100%;
+  }
+}

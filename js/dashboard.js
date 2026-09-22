@@ -19,6 +19,13 @@
 
   window.Dashboard = {
 
+    liveWaterLevelLabel() {
+      const value = Number(RescueData?.currentWaterLevel);
+      return Number.isFinite(value)
+        ? `${value} cm`
+        : "No live reading";
+    },
+
     chart: null,
 
     timer: null,
@@ -408,9 +415,7 @@
               <div class="resident-level">
 
                 <strong id="resident-level">
-                  ${this.escape(
-                    RescueData.currentWaterLevel
-                  )}
+                  ${this.escape(this.liveWaterLevelLabel())}
                 </strong>
 
                 <span>cm</span>
@@ -641,72 +646,6 @@
 
             </section>
 
-            <section class="resident-card">
-
-              <div class="resident-card-head">
-
-                <span class="eyebrow">
-                  Offline Alerts
-                </span>
-
-                ${App.statusBadge(
-                  "safe",
-                  "Ready"
-                )}
-
-              </div>
-
-              <div class="resident-mini-grid">
-
-                <span>
-
-                  <strong>
-                    ${this.escape(
-                      RescueData.system?.gsm ||
-                      "Available"
-                    )}
-                  </strong>
-
-                  <small>
-                    SMS
-                  </small>
-
-                </span>
-
-                <span>
-
-                  <strong>
-                    ${this.escape(
-                      RescueData.system?.siren ||
-                      "Ready"
-                    )}
-                  </strong>
-
-                  <small>
-                    siren
-                  </small>
-
-                </span>
-
-                <span>
-
-                  <strong>
-                    ${this.escape(
-                      RescueData.system?.lights ||
-                      "Ready"
-                    )}
-                  </strong>
-
-                  <small>
-                    lights
-                  </small>
-
-                </span>
-
-              </div>
-
-            </section>
-
             ${App.residentBottomNav(
               "dashboard"
             )}
@@ -725,24 +664,10 @@
       const alerts =
         this.getAlerts();
 
-      const routes =
-        this.getRoutes();
-
-      const sensors =
-        Array.isArray(RescueData.sensors)
-          ? RescueData.sensors
-          : [];
-
       const activeAlerts =
         alerts.filter(
           alert =>
             alert.type !== "safe"
-        ).length;
-
-      const openRoutes =
-        routes.filter(
-          route =>
-            route.status !== "Blocked"
         ).length;
 
       const rescueRequests =
@@ -794,9 +719,7 @@
               <div class="responder-level-mobile">
 
                 <strong id="dash-level">
-                  ${this.escape(
-                    RescueData.currentWaterLevel
-                  )}
+                  ${this.escape(this.liveWaterLevelLabel())}
                 </strong>
 
                 <span>
@@ -804,54 +727,6 @@
                 </span>
 
               </div>
-
-            </section>
-
-            <section class="responder-stat-grid">
-
-              <span>
-
-                <strong>
-                  ${rescueRequests.length}
-                </strong>
-
-                <small>
-                  rescue requests
-                </small>
-
-              </span>
-
-              <span>
-
-                <strong>
-                  ${openRoutes}/${routes.length}
-                </strong>
-
-                <small>
-                  open routes
-                </small>
-
-              </span>
-
-              <span>
-
-                <strong>
-                  ${
-                    typeof RescueData.onlineSensors ===
-                    "function"
-                      ? RescueData.onlineSensors()
-                      : sensors.filter(
-                          sensor =>
-                            sensor.status === "online"
-                        ).length
-                  }/${sensors.length}
-                </strong>
-
-                <small>
-                  sensors
-                </small>
-
-              </span>
 
             </section>
 
@@ -894,14 +769,6 @@
 
               </button>
 
-              <a href="monitoring.html">
-
-                ${App.icons.activity}
-                                 <span>
-                  Sensors
-                </span>
-
-              </a>
 
             </section>
 
@@ -1033,11 +900,6 @@
       const alerts =
         this.getAlerts();
 
-      const sensors =
-        Array.isArray(RescueData.sensors)
-          ? RescueData.sensors
-          : [];
-
       const activeAlerts =
         alerts.filter(
           alert =>
@@ -1059,13 +921,13 @@
       root.innerHTML = `
 
         <section
-          class="grid-4"
+          class="grid-3"
           style="margin-bottom:16px">
 
           ${this.metric(
             "Water Level",
-            `${RescueData.currentWaterLevel} cm`,
-            "Trend rising",
+            this.liveWaterLevelLabel(),
+            "Live sensor reading",
             status.key,
             App.icons.water,
             "dash-water-kpi",
@@ -1090,24 +952,6 @@
             App.icons.bell,
             "dash-alerts-kpi",
             "dash-alerts-caption"
-          )}
-
-          ${this.metric(
-            "System Health",
-            "Online",
-            `${
-              typeof RescueData.onlineSensors ===
-              "function"
-                ? RescueData.onlineSensors()
-                : sensors.filter(
-                    sensor =>
-                      sensor.status === "online"
-                  ).length
-            }/${sensors.length} sensors active`,
-            "safe",
-            App.icons.signal,
-            "dash-health-kpi",
-            "dash-health-caption"
           )}
 
         </section>
@@ -1135,9 +979,7 @@
                 status.color
               )}">
 
-              ${this.escape(
-                RescueData.currentWaterLevel
-              )}
+              ${this.escape(this.liveWaterLevelLabel())}
 
             </strong>
 
@@ -1152,61 +994,11 @@
           </p>
 
           <div class="status-details">
-
             <div>
-
-              <span class="eyebrow">
-                Location
-              </span>
-
-              <strong>
-                ${this.escape(
-                  RescueData.study
-                    ?.primaryBarangay ||
-                  "Barangay"
-                )}
-                Creek Monitoring Point
-              </strong>
-
+              <span class="eyebrow">Last Sync</span>
+              <strong id="dash-sync">${new Date().toLocaleTimeString("en-PH")}</strong>
             </div>
-
-            <div>
-
-              <span class="eyebrow">
-                Rainfall
-              </span>
-
-              <strong id="dash-rainfall">
-                ${this.escape(
-                  RescueData.rainfall
-                    ?.condition ||
-                  "Unknown"
-                )}
-                (
-                ${this.escape(
-                  RescueData.rainfall
-                    ?.intensity ??
-                  "0"
-                )}
-                mm/hr)
-              </strong>
-
-            </div>
-
-            <div>
-
-              <span class="eyebrow">
-                Last Sync
-              </span>
-
-              <strong id="dash-sync">
-                ${new Date().toLocaleTimeString(
-                  "en-PH"
-                )}
-              </strong>
-
-            </div>
-                      </div>
+          </div>
 
         </section>
 
@@ -1218,17 +1010,14 @@
 
               <div class="card-header">
 
-                <h3>
-                  Water Level - Last 6 Hours
-                </h3>
-
-                <a
-                  class="btn btn-ghost"
-                  href="monitoring.html">
-
-                  Open Monitoring
-
-                </a>
+                <div>
+                  <h3>
+                    Live Water Level
+                  </h3>
+                  <p class="muted">
+                    Real readings from the ESP32 sensor.
+                  </p>
+                </div>
 
               </div>
 
@@ -1556,99 +1345,6 @@
               System Settings
 
             </a>
-
-          </div>
-
-        </article>
-      `;
-    },
-
-    /* =====================================================
-       OFFLINE READINESS
-       ===================================================== */
-
-    offlineReadiness(role) {
-
-      const title =
-        role === "resident"
-          ? "Alert Availability"
-          : "Offline Readiness";
-
-      const system =
-        RescueData.system || {};
-
-      return `
-
-        <article class="card card-pad">
-
-          <div class="card-header">
-
-            <h3>
-              ${title}
-            </h3>
-
-            ${App.statusBadge(
-              "safe",
-              "Fallback Ready"
-            )}
-
-          </div>
-
-          <div class="kpi-line">
-
-            <span>
-              Internet
-            </span>
-
-            ${App.statusBadge(
-              "warning",
-              system.internet || "Unknown"
-            )}
-
-          </div>
-
-          <div class="kpi-line">
-
-            <span>
-              SMS Gateway
-            </span>
-
-            ${App.statusBadge(
-              "safe",
-              system.gsm || "Available"
-            )}
-
-          </div>
-
-          <div class="kpi-line">
-
-            <span>
-              Siren / Lights
-            </span>
-
-            <strong>
-              ${this.escape(
-                system.siren || "Ready"
-              )}
-              /
-              ${this.escape(
-                system.lights || "Ready"
-              )}
-            </strong>
-
-          </div>
-
-          <div class="kpi-line">
-
-            <span>
-              Solar Battery
-            </span>
-
-            <strong>
-              ${this.escape(
-                system.battery ?? "—"
-              )}%
-            </strong>
 
           </div>
 
@@ -2699,14 +2395,14 @@ Team is checking Creek Side Road and guiding residents to Marauoy Barangay Hall.
       if (level) {
 
         level.textContent =
-          `${RescueData.currentWaterLevel} cm`;
+          this.liveWaterLevelLabel();
 
       }
 
       if (residentLevel) {
 
         residentLevel.textContent =
-          RescueData.currentWaterLevel;
+          this.liveWaterLevelLabel();
 
       }
 
@@ -2725,27 +2421,17 @@ Team is checking Creek Side Road and guiding residents to Marauoy Barangay Hall.
       const statusCaption = document.getElementById("dash-status-caption");
       const alertsKpi = document.getElementById("dash-alerts-kpi");
       const alertsCaption = document.getElementById("dash-alerts-caption");
-      const healthKpi = document.getElementById("dash-health-kpi");
-      const healthCaption = document.getElementById("dash-health-caption");
       const statusBadge = document.getElementById("dash-status-badge");
-      const rainfall = document.getElementById("dash-rainfall");
-
-      const sensors = Array.isArray(RescueData.sensors) ? RescueData.sensors : [];
       const alerts = this.getAlerts();
       const activeAlerts = alerts.filter(alert => alert.type !== "safe").length;
       const latestAlert = alerts[0];
-      const onlineCount = typeof RescueData.onlineSensors === "function"
-        ? RescueData.onlineSensors()
-        : sensors.filter(sensor => String(sensor.status).toLowerCase() === "online").length;
 
-      if (waterKpi) waterKpi.textContent = `${RescueData.currentWaterLevel} cm`;
+      if (waterKpi) waterKpi.textContent = this.liveWaterLevelLabel();
       if (waterCaption) waterCaption.textContent = "Live sensor reading";
       if (statusKpi) statusKpi.textContent = currentStatus.label;
       if (statusCaption) statusCaption.textContent = currentStatus.action;
       if (alertsKpi) alertsKpi.textContent = activeAlerts;
       if (alertsCaption) alertsCaption.textContent = `${latestAlert?.level || "No active alerts"} latest`;
-      if (healthKpi) healthKpi.textContent = "Online";
-      if (healthCaption) healthCaption.textContent = `${onlineCount}/${sensors.length} sensors active`;
 
       if (statusBadge) {
         statusBadge.className = `badge ${currentStatus.key}`;
@@ -2754,57 +2440,45 @@ Team is checking Creek Side Road and guiding residents to Marauoy Barangay Hall.
 
       if (level) level.style.color = currentStatus.color;
 
-      if (rainfall) {
-        const rain = RescueData.rainfall || {};
-        rainfall.textContent = `${rain.condition || "Unknown"} (${rain.intensity ?? "0"} mm/hr)`;
-      }
-
       /*
-       * Update chart without rebuilding it.
+       * Keep the dashboard chart tied to actual
+       * Firebase history instead of generating
+       * simulated points on a timer.
        */
 
       if (this.chart) {
 
         try {
+          const history =
+            typeof RescueData.history === "function"
+              ? RescueData.history(6)
+              : [];
 
-          const time =
-            new Date().toLocaleTimeString(
-              "en-PH",
-              {
-                hour: "2-digit",
-                minute: "2-digit"
-              }
-            );
-
-          this.chart.data.labels.push(
-            time
+          const labels = history.map(point =>
+            typeof RescueData.formatTime === "function"
+              ? RescueData.formatTime(point.time)
+              : new Date(point.time).toLocaleTimeString("en-PH")
           );
 
-          this.chart.data.datasets[0].data.push(
-            RescueData.currentWaterLevel
+          const values = history.map(point =>
+            Number(
+              point.level ??
+              point.value ??
+              point.distance ??
+              0
+            )
           );
 
-          if (
-            this.chart.data.labels.length >
-            44
-          ) {
-
-            this.chart.data.labels.shift();
-
-            this.chart.data.datasets[0].data.shift();
-
+          if (this.chart.data?.labels && this.chart.data.datasets?.[0]) {
+            this.chart.data.labels = labels;
+            this.chart.data.datasets[0].data = values;
+            this.chart.update("none");
           }
-
-          this.chart.update("none");
-
         } catch (error) {
-
           console.warn(
             "Unable to update dashboard chart:",
             error
           );
-
-          this.chart = null;
         }
       }
     },

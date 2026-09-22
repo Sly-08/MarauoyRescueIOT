@@ -62,15 +62,13 @@ if (
       }
 
       /*
-       * Make sure the page still works even if
-       * history data is temporarily unavailable.
+       * If Firebase history is temporarily unavailable,
+       * use the current water level for the chart.
        */
       if (!data.length) {
 
         data = [{
-          time: new Date().toLocaleTimeString(
-            "en-PH"
-          ),
+          time: new Date().toISOString(),
           level:
             Number(
               RescueData.currentWaterLevel || 0
@@ -78,6 +76,25 @@ if (
         }];
       }
 
+      /*
+       * Destroy the previous Chart.js instance before
+       * replacing the canvas.
+       */
+      if (
+        this.chart &&
+        typeof this.chart.destroy === "function"
+      ) {
+        try {
+          this.chart.destroy();
+        } catch (error) {
+          console.warn(
+            "Unable to destroy previous monitoring chart:",
+            error
+          );
+        }
+      }
+
+      this.chart = null;
 
       root.innerHTML = `
 
@@ -147,7 +164,6 @@ if (
 
             </article>
 
-
           </div>
 
 
@@ -169,37 +185,142 @@ if (
          CHART
          ============================================= */
 
-      this.chart = null;
+      const canvas =
+        document.getElementById(
+          "monitor-chart"
+        );
 
       if (
+        canvas &&
         typeof RescueCharts !== "undefined" &&
-        typeof RescueCharts.lineChart ===
-          "function"
+        typeof RescueCharts.lineChart === "function"
       ) {
 
-        const canvas =
-          document.getElementById(
-            "monitor-chart"
+        try {
+
+          this.chart =
+            RescueCharts.lineChart(
+              canvas,
+              data
+            );
+
+        } catch (error) {
+
+          console.error(
+            "Unable to initialize monitoring chart:",
+            error
           );
 
-        if (canvas) {
+        }
+
+      } else {
+
+        console.error(
+          "Monitoring chart could not be initialized."
+        );
+
+      }
+
+    },
+
+
+    /* =====================================================
+       UPDATE CHART
+       ===================================================== */
+
+    updateChart() {
+
+      if (!this.chart) {
+        return;
+      }
+
+      let data = [];
+
+      try {
+
+        data =
+          typeof RescueData.history === "function"
+            ? RescueData.history(this.range)
+            : [];
+
+      } catch (error) {
+
+        console.error(
+          "Unable to update monitoring history:",
+          error
+        );
+
+        return;
+      }
+
+      if (!Array.isArray(data)) {
+        return;
+      }
+
+      /*
+       * Keep one fallback point when there is no history.
+       */
+      if (!data.length) {
+
+        data = [{
+          time: new Date().toISOString(),
+          level:
+            Number(
+              RescueData.currentWaterLevel || 0
+            )
+        }];
+
+      }
+
+      const labels =
+        data.map(point => {
 
           try {
 
-            this.chart =
-              RescueCharts.lineChart(
-                canvas,
-                data
-              );
+            return typeof RescueData.formatTime === "function"
+              ? RescueData.formatTime(point.time)
+              : new Date(point.time).toLocaleTimeString(
+                  "en-PH",
+                  {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                  }
+                );
 
           } catch (error) {
 
-            console.error(
-              "Unable to initialize monitoring chart:",
-              error
-            );
+            return String(point.time ?? "");
 
           }
+
+        });
+
+      const values =
+        data.map(point =>
+          Number(
+            point.level ??
+            point.value ??
+            0
+          )
+        );
+
+      if (
+        this.chart.data &&
+        this.chart.data.labels &&
+        this.chart.data.datasets?.[0]
+      ) {
+
+        this.chart.data.labels =
+          labels;
+
+        this.chart.data.datasets[0].data =
+          values;
+
+        if (
+          typeof this.chart.update === "function"
+        ) {
+
+          this.chart.update("none");
 
         }
 
@@ -411,6 +532,7 @@ if (
       `;
 
       this.chart = null;
+
     },
 
 
@@ -494,7 +616,9 @@ if (
     liveMonitoringPanel() {
 
       const waterLevel =
-        Number(RescueData.currentWaterLevel ?? 0);
+        Number(
+          RescueData.currentWaterLevel ?? 0
+        );
 
       const status =
         typeof RescueData.status === "function"
@@ -508,12 +632,18 @@ if (
         RescueData.system || {};
 
       const connection =
-        String(system.internet || "Unknown");
+        String(
+          system.internet || "Unknown"
+        );
 
       const connectionTone =
-        connection.toLowerCase().includes("online")
+        connection
+          .toLowerCase()
+          .includes("online")
           ? "safe"
-          : connection.toLowerCase().includes("connect")
+          : connection
+              .toLowerCase()
+              .includes("connect")
           ? "warning"
           : "info";
 
@@ -534,6 +664,7 @@ if (
             <div class="live-monitor-item">
 
               <div>
+
                 <span class="eyebrow">
                   Water Level
                 </span>
@@ -541,6 +672,7 @@ if (
                 <strong class="live-monitor-value">
                   ${this.escape(waterLevel)} cm
                 </strong>
+
               </div>
 
               <span class="live-monitor-icon">
@@ -549,9 +681,11 @@ if (
 
             </div>
 
+
             <div class="live-monitor-item">
 
               <div>
+
                 <span class="eyebrow">
                   Sensor Status
                 </span>
@@ -560,6 +694,7 @@ if (
                   status.key || "safe",
                   status.label || "Unknown"
                 )}
+
               </div>
 
               <span class="live-monitor-icon">
@@ -568,9 +703,11 @@ if (
 
             </div>
 
+
             <div class="live-monitor-item">
 
               <div>
+
                 <span class="eyebrow">
                   Connection
                 </span>
@@ -579,6 +716,7 @@ if (
                   connectionTone,
                   connection
                 )}
+
               </div>
 
               <span class="live-monitor-icon">
@@ -801,6 +939,7 @@ if (
         "Siren and warning light test triggered for demo.",
         "warning"
       );
+
     },
 
 
@@ -869,7 +1008,9 @@ Water is approaching the warning marker near Creek Side Road.
           typeof RescueData.updateWaterLevel ===
           "function"
         ) {
+
           RescueData.updateWaterLevel();
+
         }
 
       } catch (error) {
@@ -883,13 +1024,9 @@ Water is approaching the warning marker near Creek Side Road.
 
 
       /*
-       * The chart is populated from actual Firebase
-       * history. Re-rendering happens when RescueData
-       * receives an RTDB update, so do not append
-       * simulated points here.
+       * Update responder sensors without creating
+       * additional simulated chart points.
        */
-
-      /* Update responder sensors */
 
       const sensorList =
         document.getElementById(
@@ -911,6 +1048,7 @@ Water is approaching the warning marker near Creek Side Road.
               this.mobileSensor(sensor)
             )
             .join("");
+
       }
 
     },
@@ -928,38 +1066,40 @@ Water is approaching the warning marker near Creek Side Road.
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+
     }
 
   };
 
 
   /* =======================================================
-     START LIVE MONITORING
+     INITIAL PAGE RENDER
      ======================================================= */
 
   Monitoring.render();
 
-  window.addEventListener(
-    "RescueDataReady",
-    function () {
-      Monitoring.render();
-    }
-  );
+
+  /* =======================================================
+     FIREBASE / DATA UPDATE
+     ======================================================= */
 
   window.addEventListener(
     "RescueDataUpdated",
     function () {
+
       Monitoring.render();
+
     }
   );
 
 
   /*
-   * Update status values every 2 seconds.
+   * Update live values every 2 seconds.
    */
   Monitoring.timer =
     setInterval(
       () => Monitoring.tick(),
       2000
     );
+
 }
