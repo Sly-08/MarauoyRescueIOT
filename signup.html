@@ -474,7 +474,7 @@ const Signup = {
   },
 
 
-  submit(event) {
+  async submit(event) {
 
     event.preventDefault();
 
@@ -629,7 +629,7 @@ const Signup = {
     /* CREATE ACCOUNT */
 
     const result =
-      App.registerUser({
+      await App.registerUser({
 
         name: name,
 

@@ -287,7 +287,7 @@ const App = {
       ) || null;
   },
 
-    registerUser(userData = {}) {
+    async registerUser(userData = {}) {
 
     const name =
       String(
@@ -413,18 +413,42 @@ const App = {
 
     if (!this.saveRegisteredUsers(users)) {
 
-  return {
-    success: false,
-    message:
-      "Unable to save the new account."
-  };
-}
+      return {
+        success: false,
+        message:
+          "Unable to save the new account."
+      };
+    }
 
-this.syncSmsRecipient(
-  user
-);
+    // The SMS recipient record must be synchronized before
+    // registration is reported as successful. Otherwise the
+    // account can exist locally while the backend has no phone
+    // number to notify.
+    const smsRecipientSynced =
+      await this.syncSmsRecipient(user);
 
-return {
+    if (!smsRecipientSynced) {
+
+      // Roll back the local account when Firebase recipient
+      // synchronization fails so registration cannot leave a
+      // partially configured SMS account behind.
+      const currentUsers =
+        this.getRegisteredUsers();
+
+      this.saveRegisteredUsers(
+        currentUsers.filter(
+          item => item.id !== user.id
+        )
+      );
+
+      return {
+        success: false,
+        message:
+          "Account could not be registered because SMS notification setup failed. Please try again."
+      };
+    }
+
+    return {
       success: true,
       user,
 
@@ -475,13 +499,9 @@ return {
 
     const response =
       await fetch(
-        "https://rescueiot-default-rtdb.asia-southeast1.firebasedatabase.app/smsRecipients/" +
-          encodeURIComponent(
-            user.id
-          ) +
-          ".json",
+        "https://marauoyrescueiot.onrender.com/sync-sms-recipient",
         {
-          method: "PUT",
+          method: "POST",
 
           headers: {
             "Content-Type":

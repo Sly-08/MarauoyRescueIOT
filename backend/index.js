@@ -142,7 +142,9 @@ async function sendSMS(message) {
 
       // Use the phone field from the resident record
       const rawPhone =
-        resident.phone || "";
+        resident.phoneNumber ||
+        resident.phone ||
+        "";
 
       if (!rawPhone) {
         continue;
@@ -935,6 +937,68 @@ async function startFirebaseMonitoring() {
     "RESCUE-IOT: Firebase automatic SMS monitoring is ACTIVE."
   );
 }
+
+// =====================================================
+// SMS RECIPIENT SYNC ROUTE
+// =====================================================
+
+app.post(
+  "/sync-sms-recipient",
+  async (req, res) => {
+
+    try {
+
+      if (!smsRecipientsRef) {
+
+        return res.status(503).json({
+          success: false,
+          message:
+            "Firebase SMS recipients reference is unavailable."
+        });
+      }
+
+      const recipient =
+        req.body || {};
+
+      if (!recipient.id || !recipient.phone) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "Recipient ID and phone number are required."
+        });
+      }
+
+      await smsRecipientsRef
+        .child(String(recipient.id))
+        .set(recipient);
+
+      console.log(
+        "RESCUE-IOT: SMS recipient synced:",
+        recipient.id
+      );
+
+      return res.json({
+        success: true,
+        message:
+          "SMS recipient synced successfully."
+      });
+
+    } catch (error) {
+
+      console.error(
+        "RESCUE-IOT: SMS recipient sync error:",
+        error.message
+      );
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Unable to sync SMS recipient."
+      });
+    }
+  }
+);
 
 // =====================================================
 // TEST SMS ROUTE
